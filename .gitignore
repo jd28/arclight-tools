@@ -1,0 +1,33 @@
+# Build
+build/
+build-doc/
+vcpkg/
+vcpkg_installed/
+*.so
+*.dylib
+*.dll
+
+# IDEs
+.vscode/
+.clion/
+CMakeLists.txt.user
+.kdev4/
+*.kdev4
+*.autosave
+
+# bin/
+bin/*
+!bin/.gitkeep
+
+# docs
+docs/_build/
+
+# python
+dist/
+.venv
+*.py[cd]
+__pycache__
+*.egg-info
+
+# platform
+.DS_Store

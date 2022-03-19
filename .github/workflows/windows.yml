@@ -1,0 +1,83 @@
+name: windows
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+
+jobs:
+  build:
+    env:
+      buildDir: "${{ github.workspace }}/build/"
+      vcpkg-tag: "2022.03.10"
+      VCPKG_ROOT: "c:/vcpkg_root/"
+      VCPKG_DEFAULT_BINARY_CACHE: "c:/vcpkg_root/.cache"
+
+    name: build on windows
+    runs-on: windows-2019
+
+    steps:
+      - name: Visual Studio shell
+        uses: egor-tensin/vs-shell@v2
+        with:
+          arch: x64
+
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      # Install latest CMake.
+      - uses: lukka/get-cmake@latest
+
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v1 # not v2!
+        with:
+          path: ../Qt
+          key: ${{ runner.os }}-QtCache
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+
+      - name: download vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg c:/vcpkg_root
+          pushd c:/vcpkg_root
+          git checkout --force ${{ env.vcpkg-tag }}
+          ./bootstrap-vcpkg.bat
+          popd
+
+      - name: cache vcpkg
+        id: cache-vcpkg
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-vcpgk3
+        with:
+          path: |
+            ${{ github.workspace }}/vcpkg/.cache
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.vcpkg-tag }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.vcpkg-tag }}
+
+      - name: Make cache dir
+        run: mkdir "${{env.VCPKG_DEFAULT_BINARY_CACHE}}"
+
+      - name: Configure & Build
+        run: .\scripts\dist_win.bat
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: vcpkg-logs
+          path: ${{env.VCPKG_ROOT}}/buildtrees/**/*.log
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: arclight-windows-x64
+          path: bin/*

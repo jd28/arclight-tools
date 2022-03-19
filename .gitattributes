@@ -1,0 +1,22 @@
+# Textures
+*.dds binary
+*.jpeg binary
+*.plt binary
+*.png binary
+*.tga binary
+
+# Gffs
+*.are binary
+*.bic binary
+*.gi[tc] binary
+*.ifo binary
+*.ut[ceimpstw] binary
+
+# Containers
+*.bif binary
+*.erf binary
+*.hak binary
+*.key binary
+*.mod binary
+*.tlk binary
+*.zip binary

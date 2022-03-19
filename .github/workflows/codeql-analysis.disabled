@@ -1,0 +1,118 @@
+# For most projects, this workflow file will not need changing; you simply need
+# to commit it to your repository.
+#
+# You may wish to alter this file to override the set of languages analyzed,
+# or to provide custom queries or build logic.
+#
+# ******** NOTE ********
+# We have attempted to detect the languages in your repository. Please check
+# the `language` matrix defined below to confirm you have the correct set of
+# supported CodeQL languages.
+#
+name: "CodeQL"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [main]
+  schedule:
+    - cron: "21 9 * * 3"
+
+jobs:
+  analyze:
+    env:
+      buildDir: "${{ github.workspace }}/build/"
+      vcpkg-tag: "2022.03.10"
+      VCPKG_ROOT: "${{ github.workspace }}/vcpkg/"
+      VCPKG_DEFAULT_BINARY_CACHE: "${{ github.workspace }}/vcpkg/.cache"
+
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["cpp"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+
+      - name: install non-vcpkg dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gperf build-essential libgl1-mesa-dev libxkbcommon-x11-0 \
+            libpulse-dev libxcb-util1 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
+            libxcb-randr0 libxcb-render-util0 libxcb-render0 libxcb-shape0 libxcb-shm0 \
+            libxcb-sync1 libxcb-xfixes0 libxcb-xinerama0 libxcb1 \
+            at curl unzip tar libxt-dev libxaw7-dev cifs-utils \
+            zip libx11-dev libxkbcommon-x11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libxinerama-dev libxxf86vm-dev \
+            libxcursor-dev yasm libnuma1 libnuma-dev python-six python3-six python-yaml \
+            flex libbison-dev autoconf libudev-dev libncurses5-dev libtool libxrandr-dev \
+            xutils-dev dh-autoreconf autoconf-archive libgles2-mesa-dev ruby-full \
+            pkg-config meson libxext-dev libxfixes-dev libxrender-dev \
+            libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libxcb-util0-dev \
+            libxkbcommon-dev libxcb-keysyms1-dev \
+            libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync0-dev \
+            libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev \
+            libxcb-render-util0-dev libxcb-xinerama0-dev libxcb-xkb-dev libxcb-xinput-dev libkrb5-dev \
+            libxcb-res0-dev python3-setuptools python3-mako python3-pip
+
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: ${{ matrix.language }}
+          # If you wish to specify custom queries, you can do so here or in a config file.
+          # By default, queries listed here will override any specified in a config file.
+          # Prefix the list here with "+" to use these queries and those in the config file.
+          # queries: ./path/to/local/query, your-org/your-repo/queries@main
+
+      - name: Install latest CMake.
+        uses: lukka/get-cmake@latest
+
+      - name: download vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg ${{ github.workspace }}/vcpkg || true
+          pushd vcpkg
+          git checkout --force ${{ env.vcpkg-tag }}
+          ./bootstrap-vcpkg.sh
+          popd
+
+      - name: cache vcpkg
+        id: cache-vcpkg
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-vcpgk2
+        with:
+          path: |
+            ${{ github.workspace }}/vcpkg/.cache
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.vcpkg-tag }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.vcpkg-tag }}
+
+      - name: Make cache dir
+        if: steps.cache-vcpkg.outputs.cache-hit != 'true'
+        run: mkdir "${{ github.workspace }}/vcpkg/.cache"
+
+      - name: Configure
+        run: |
+          cmake --preset default
+
+      - name: Build
+        run: |
+          cmake --build --preset default

@@ -1,0 +1,7 @@
+[submodule "external/libnw"]
+	path = external/libnw
+	url = https://github.com/jd28/libnw.git
+	branch = main
+[submodule "external/ZFontIcon"]
+	path = external/ZFontIcon
+	url = https://github.com/philvl/ZFontIcon.git
