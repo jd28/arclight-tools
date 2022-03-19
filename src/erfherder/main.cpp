@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
     QCoreApplication::setApplicationName("erfherder");
     QCoreApplication::setApplicationVersion("1.0.0");
 
-#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN || Q_OS_LINUX
     app.setStyle(QStyleFactory::create("Fusion"));
     QPalette darkPalette;
     darkPalette.setColor(QPalette::Window, QColor(53, 53, 53));
