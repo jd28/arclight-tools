@@ -18,18 +18,12 @@ jobs:
       VCPKG_DEFAULT_BINARY_CACHE: "${{ github.workspace }}/vcpkg/.cache"
 
     name: build on linux
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: true
-
-      - name: Free disk space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
 
       - name: install non-vcpkg dependencies
         run: |
@@ -52,18 +46,6 @@ jobs:
             libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev \
             libxcb-render-util0-dev libxcb-xinerama0-dev libxcb-xkb-dev libxcb-xinput-dev libkrb5-dev \
             libxcb-res0-dev python3-setuptools python3-mako python3-pip
-
-      - name: Use gcc-11
-        run: |
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 \
-                         --slave /usr/bin/gcov gcov /usr/bin/gcov-11 \
-                         --slave /usr/bin/gcc-ar gcc-ar /usr/bin/gcc-ar-11 \
-                         --slave /usr/bin/gcc-ranlib gcc-ranlib /usr/bin/gcc-ranlib-11 && \
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 110
-          sudo update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-11 110
-          gcc --version
-          g++ --version
-          gcov --version
 
       # Install latest CMake.
       - uses: lukka/get-cmake@latest
@@ -103,11 +85,6 @@ jobs:
       - name: Make cache dir
         if: steps.cache-vcpkg.outputs.cache-hit != 'true'
         run: mkdir -p "${{ github.workspace }}/vcpkg/.cache"
-
-      - name: Get linuxdeployqt
-        run:  wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
-      - name: Make linuxdeployqt executable
-        run: chmod a+x linuxdeployqt-continuous-x86_64.AppImage
 
       - name: Configure & Build
         run: |
