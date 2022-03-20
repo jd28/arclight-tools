@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [[ -z "${VCPKG_ROOT}" ]]; then
   echo "Environment variable VCPKG_ROOT not set, do you have vcpkg installed?"
