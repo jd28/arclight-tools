@@ -46,6 +46,11 @@ ContainerModel* ContainerWidget::model()
     return model_.get();
 }
 
+ContainerSortFilterProxyModel* ContainerWidget::proxy()
+{
+    return proxy_.get();
+}
+
 QTableView* ContainerWidget::table()
 {
     return ui_->containerView;

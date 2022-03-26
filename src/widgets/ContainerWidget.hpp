@@ -18,6 +18,7 @@ public:
 
     nw::Container* container();
     ContainerModel* model();
+    ContainerSortFilterProxyModel* proxy();
     QTableView* table();
 
 private:
