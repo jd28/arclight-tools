@@ -20,3 +20,6 @@
 *.mod binary
 *.tlk binary
 *.zip binary
+
+# Documents
+*.pdf binary
