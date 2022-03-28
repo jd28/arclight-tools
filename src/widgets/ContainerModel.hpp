@@ -32,23 +32,24 @@ class ContainerModel : public QAbstractTableModel {
 public:
     explicit ContainerModel(nw::Container* container, QObject* parent = nullptr);
 
-    // Header:
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-
+    void addFile(const nw::Resource& res, const std::filesystem::path& file);
+    void addFile(const nw::Resource& res, const nw::ByteArray& bytes);
     void addFiles(const QStringList& files);
     void mergeFiles(const QStringList& files);
-
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     void setColumnCount(int cols);
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const override;
-    bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
-    Qt::ItemFlags flags(const QModelIndex& index) const override;
-    QMimeData* mimeData(const QModelIndexList& indexes) const override;
+    // QAbstractTableModel overrides
+    virtual bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const override;
+    virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    virtual bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
+    virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
+    virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    virtual QMimeData* mimeData(const QModelIndexList& indexes) const override;
     virtual QStringList mimeTypes() const override;
-    Qt::DropActions supportedDropActions() const override;
+    virtual bool removeRows(int row, int count, const QModelIndex& index) override;
+    virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    virtual Qt::DropActions supportedDropActions() const override;
 
 private:
     nw::Container* container_ = nullptr;

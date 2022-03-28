@@ -46,8 +46,11 @@ MainWindow::MainWindow(QWidget* parent)
     QObject::connect(ui_->actionSave_As, &QAction::triggered, this, &MainWindow::onActionSaveAs);
 
     QObject::connect(ui_->actionImport, &QAction::triggered, this, &MainWindow::onActionImport);
+    QObject::connect(ui_->actionDelete_2, &QAction::triggered, this, &MainWindow::onActionDelete);
     QObject::connect(ui_->actionExport, &QAction::triggered, this, &MainWindow::onActionExport);
     QObject::connect(ui_->actionExport_All, &QAction::triggered, this, &MainWindow::onActionExportAll);
+    QObject::connect(ui_->actionMerge, &QAction::triggered, this, &MainWindow::onActionMerge);
+
     QObject::connect(ui_->actionAbout, &QAction::triggered, this, &MainWindow::onActionAbout);
     QObject::connect(ui_->actionAbout_Qt_2, &QAction::triggered, this, &MainWindow::onActionAboutQt);
 
@@ -98,10 +101,7 @@ void MainWindow::open(const QString& path)
         recentActions_[i]->setVisible(true);
     }
 
-    ui_->actionImport->setEnabled(true);
-    ui_->actionMerge->setEnabled(true);
-    ui_->actionExport->setEnabled(true);
-    ui_->actionExport_All->setEnabled(true);
+    connectModifiedSlots(current()->model());
 }
 
 void MainWindow::restoreWindow()
@@ -119,10 +119,8 @@ void MainWindow::onActionNew()
     int idx = ui_->containerTabWidget->addTab(currentContainer_, "untitled");
     ui_->containerTabWidget->setTabsClosable(true);
     ui_->containerTabWidget->setCurrentIndex(idx);
-    ui_->actionImport->setEnabled(true);
-    ui_->actionMerge->setEnabled(true);
-    ui_->actionExport->setEnabled(true);
-    ui_->actionExport_All->setEnabled(true);
+    enableModificationMenus(true);
+    connectModifiedSlots(current()->model());
 }
 
 void MainWindow::onActionOpen()
@@ -143,14 +141,11 @@ void MainWindow::onActionImport()
     auto files = QFileDialog::getOpenFileNames(this, "Import...");
     if (files.isEmpty()) { return; }
     current()->model()->addFiles(files);
-    auto name = current()->container()->name();
-    ui_->containerTabWidget->setTabText(ui_->containerTabWidget->currentIndex(),
-        QString::fromStdString(name.empty() ? "untitled*" : name + "*"));
 }
 
 void MainWindow::onActionMerge()
 {
-    QStringList files = QFileDialog::getOpenFileNames(this, "Merge Files...", "", "Erf (*.erf *.mod *.hak *.nwm *.sav)");
+    QStringList files = QFileDialog::getOpenFileNames(this, "Merge Files...", "", "Erf (*.erf *.mod *.hak)");
     if (files.isEmpty()) { return; }
     current()->model()->mergeFiles(files);
 }
@@ -178,6 +173,14 @@ void MainWindow::onActionExportAll()
     c->extract(std::regex(".*"), path.toStdString());
 }
 
+void MainWindow::onActionDelete()
+{
+    QModelIndexList idxs;
+    while ((idxs = current()->table()->selectionModel()->selectedIndexes()).size()) {
+        current()->proxy()->removeRow(idxs.first().row());
+    }
+}
+
 void MainWindow::onActionSave()
 {
     if (!current()) { return; }
@@ -186,8 +189,7 @@ void MainWindow::onActionSave()
     } else if (auto e = dynamic_cast<nw::Erf*>(current()->container())) {
         e->save();
         e->reload();
-        ui_->containerTabWidget->setTabText(ui_->containerTabWidget->currentIndex(),
-            QString::fromStdString(e->name()));
+        setModifiedTabName(false);
     }
 }
 
@@ -229,18 +231,37 @@ void MainWindow::onActionAboutQt()
     QMessageBox::aboutQt(this);
 }
 
+void MainWindow::onModelModified(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
+{
+    Q_UNUSED(topLeft);
+    Q_UNUSED(bottomRight);
+    Q_UNUSED(roles);
+    setModifiedTabName(true);
+}
+
+void MainWindow::onRowsInserted(const QModelIndex& parent, int first, int last)
+{
+    Q_UNUSED(parent);
+    Q_UNUSED(first);
+    Q_UNUSED(last);
+    setModifiedTabName(true);
+}
+
+void MainWindow::onRowsRemoved(const QModelIndex& parent, int first, int last)
+{
+    Q_UNUSED(parent);
+    Q_UNUSED(first);
+    Q_UNUSED(last);
+    setModifiedTabName(true);
+}
+
 void MainWindow::onTabCloseRequested(int index)
 {
     auto cw = reinterpret_cast<ContainerWidget*>(ui_->containerTabWidget->widget(index));
     ui_->containerTabWidget->removeTab(index);
     delete cw;
-    auto w = ui_->containerTabWidget->currentWidget();
-    currentContainer_ = reinterpret_cast<ContainerWidget*>(w);
-    if (!currentContainer_) {
-        ui_->actionImport->setEnabled(false);
-        ui_->actionMerge->setEnabled(false);
-        ui_->actionExport->setEnabled(false);
-        ui_->actionExport_All->setEnabled(false);
+    if (!current()) {
+        enableModificationMenus(false);
     }
 }
 
@@ -264,4 +285,39 @@ void MainWindow::writeSettings()
     }
     settings_.endArray();
     settings_.setValue("Window/geometry", saveGeometry());
+}
+
+void MainWindow::connectModifiedSlots(ContainerModel* model)
+{
+    QObject::connect(model, &QAbstractItemModel::dataChanged,
+        this, &MainWindow::onModelModified);
+    QObject::connect(model, &QAbstractItemModel::rowsInserted,
+        this, &MainWindow::onRowsInserted);
+    QObject::connect(model, &QAbstractItemModel::rowsRemoved,
+        this, &MainWindow::onRowsRemoved);
+}
+
+void MainWindow::enableModificationMenus(bool enabled)
+{
+    if (current() && dynamic_cast<nw::Erf*>(current()->container())) {
+        ui_->actionImport->setEnabled(enabled);
+        ui_->actionMerge->setEnabled(enabled);
+    } else {
+        ui_->actionImport->setEnabled(false);
+        ui_->actionMerge->setEnabled(false);
+    }
+    ui_->actionExport->setEnabled(enabled);
+    ui_->actionExport_All->setEnabled(enabled);
+}
+
+void MainWindow::setModifiedTabName(bool modified)
+{
+    auto name = current()->container()->name();
+    if (modified) {
+        ui_->containerTabWidget->setTabText(ui_->containerTabWidget->currentIndex(),
+            QString::fromStdString(name.empty() ? "untitled*" : name + "*"));
+    } else {
+        ui_->containerTabWidget->setTabText(ui_->containerTabWidget->currentIndex(),
+            QString::fromStdString(name));
+    }
 }

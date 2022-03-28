@@ -3,8 +3,11 @@
 #include "ui_ContainerWidget.h"
 
 #include <nw/log.hpp>
+#include <nw/resources/Erf.hpp>
 
-#include <QEnterEvent>
+#include <QMessageBox>
+
+namespace fs = std::filesystem;
 
 ContainerWidget::ContainerWidget(nw::Container* container, int columns, QWidget* parent)
     : QWidget(parent)
@@ -21,8 +24,10 @@ ContainerWidget::ContainerWidget(nw::Container* container, int columns, QWidget*
     model_->setColumnCount(columns);
     proxy_->setSourceModel(model_.get());
 
-    ui_->containerView->setAcceptDrops(true);
-    ui_->containerView->setDropIndicatorShown(true);
+    if (dynamic_cast<nw::Erf*>(container)) {
+        ui_->containerView->setAcceptDrops(true);
+        ui_->containerView->setDropIndicatorShown(true);
+    }
     ui_->containerView->setDragEnabled(true);
     ui_->containerView->setDragDropMode(QAbstractItemView::DragDrop);
 

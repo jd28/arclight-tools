@@ -76,6 +76,8 @@
     <addaction name="separator"/>
     <addaction name="actionExport"/>
     <addaction name="actionExport_All"/>
+    <addaction name="separator"/>
+    <addaction name="actionDelete_2"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -211,6 +213,14 @@
   <action name="actionAbout_Qt_2">
    <property name="text">
     <string>About Qt</string>
+   </property>
+  </action>
+  <action name="actionDelete_2">
+   <property name="text">
+    <string>Delete</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Backspace</string>
    </property>
   </action>
  </widget>

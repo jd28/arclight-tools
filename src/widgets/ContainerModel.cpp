@@ -12,6 +12,7 @@ extern "C" {
 #include <nw/util/string.hpp>
 
 #include <QFileInfo>
+#include <QMessageBox>
 #include <QMimeData>
 #include <QUrl>
 
@@ -63,94 +64,132 @@ ContainerModel::ContainerModel(nw::Container* container, QObject* parent)
     });
 }
 
-void ContainerModel::addFiles(const QStringList& files)
+void ContainerModel::addFile(const nw::Resource& res, const fs::path& file)
 {
-    std::filesystem::path p;
-    nw::Resource r;
-    beginResetModel();
     if (auto e = dynamic_cast<nw::Erf*>(container_)) {
-        for (const auto& f : files) {
-            p = fs::u8path(f.toStdString());
-            r = nw::Resource::from_path(p);
-            if (!r.valid()) {
-                // Put message eventually.
-                continue;
-            }
-            e->add(p);
+        if (e->erase(res)) {
+            e->add(file);
+            auto it = std::find_if(std::begin(resources_), std::end(resources_), [&res](const auto& rd) {
+                return rd.name == res;
+            });
+            *it = e->stat(res);
+            int row = static_cast<int>(std::distance(std::begin(resources_), it));
+            emit dataChanged(index(row, 0), index(row, columnCount()));
+        } else {
+            beginInsertRows(QModelIndex(), rowCount(), rowCount());
+            e->add(file);
+            resources_.push_back(e->stat(res));
+            endInsertRows();
         }
     }
-    resources_ = container_->all();
-    endResetModel();
+}
+
+void ContainerModel::addFile(const nw::Resource& res, const nw::ByteArray& bytes)
+{
+    if (auto e = dynamic_cast<nw::Erf*>(container_)) {
+        if (e->erase(res)) {
+            e->add(res, bytes);
+            auto it = std::find_if(std::begin(resources_), std::end(resources_), [&res](const auto& rd) {
+                return rd.name == res;
+            });
+            *it = e->stat(res);
+            int row = static_cast<int>(std::distance(std::begin(resources_), it));
+            emit dataChanged(index(row, 0), index(row, columnCount()));
+        } else {
+            beginInsertRows(QModelIndex(), rowCount(), rowCount());
+            e->add(res, bytes);
+            resources_.push_back(e->stat(res));
+            endInsertRows();
+        }
+    }
+}
+
+void ContainerModel::addFiles(const QStringList& files)
+{
+    bool yes_to_all = false;
+    nw::Erf* erf = nullptr;
+
+    if (!(erf = dynamic_cast<nw::Erf*>(container_))) {
+        return;
+    }
+
+    for (const auto& f : files) {
+        auto p = fs::u8path(f.toStdString());
+        auto r = nw::Resource::from_path(p);
+        if (!r.valid()) {
+            // Put message eventually.
+            continue;
+        }
+        LOG_F(INFO, "type: {}, is_container: {}", r.type, nw::ResourceType::is_container(r.type));
+        if (nw::ResourceType::is_container(r.type)) {
+            mergeFiles({f});
+        } else if (erf->contains(r)) {
+            bool yes = false;
+            if (!yes_to_all) {
+                auto b = QMessageBox::question(nullptr, "Overwrite File",
+                    QString::fromStdString(fmt::format("'{}' already exists, would you like to overwrite?", r.filename())),
+                    QMessageBox::Yes | QMessageBox::No | QMessageBox::YesToAll);
+                yes_to_all = b == QMessageBox::YesToAll;
+                yes = b == QMessageBox::Yes;
+            }
+            if (yes_to_all || yes) {
+                addFile(r, p);
+            }
+        } else {
+            addFile(r, p);
+        }
+    }
 }
 
 void ContainerModel::mergeFiles(const QStringList& files)
 {
-    beginResetModel();
-    if (auto e = dynamic_cast<nw::Erf*>(container_)) {
+    bool yes_to_all = false;
+    nw::Erf* erf = nullptr;
+
+    if (!(erf = dynamic_cast<nw::Erf*>(container_))) {
+        return;
     }
-    resources_ = container_->all();
-    endResetModel();
-}
 
-QVariant ContainerModel::headerData(int section, Qt::Orientation orientation, int role) const
-{
-    if (!container_) { return {}; }
-    if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
-        return {};
+    for (const auto& f : files) {
+        auto p = fs::u8path(f.toStdString());
+        auto r = nw::Resource::from_path(p);
+        if (!r.valid()) {
+            // Put message eventually.
+            continue;
+        }
 
-    if (section == 0) {
-        return "Resource";
-    } else {
-        return "Size (bytes)";
+        switch (r.type) {
+        default:
+            continue;
+        case nw::ResourceType::erf:
+        case nw::ResourceType::hak:
+        case nw::ResourceType::mod: {
+            nw::Erf e{p};
+            for (const auto& rd : e.all()) {
+                if (erf->contains(rd.name)) {
+                    bool yes = false;
+                    if (!yes_to_all) {
+                        auto b = QMessageBox::question(nullptr, "Overwrite File",
+                            QString::fromStdString(fmt::format("'{}' already exists, would you like to overwrite?", rd.name.filename())),
+                            QMessageBox::Yes | QMessageBox::No | QMessageBox::YesToAll);
+                        yes_to_all = b == QMessageBox::YesToAll;
+                        yes = b == QMessageBox::Yes;
+                    }
+                    if (yes_to_all || yes) {
+                        addFile(rd.name, e.demand(rd.name));
+                    }
+                } else {
+                    addFile(rd.name, e.demand(rd.name));
+                }
+            }
+        } break;
+        }
     }
-}
-
-int ContainerModel::rowCount(const QModelIndex& parent) const
-{
-    return !parent.isValid() ? static_cast<int>(container_->size()) : 0;
-}
-
-int ContainerModel::columnCount(const QModelIndex&) const
-{
-    return cols_;
 }
 
 void ContainerModel::setColumnCount(int cols)
 {
     cols_ = cols;
-}
-
-QVariant ContainerModel::data(const QModelIndex& index, int role) const
-{
-    if (!index.isValid())
-        return QVariant();
-
-    size_t row = static_cast<size_t>(index.row());
-
-    if (role == Qt::DecorationRole && index.column() == 0) {
-        return restypeToIcon(resources_[row].name.type);
-    } else if (role == Qt::DisplayRole) {
-        switch (index.column()) {
-        default:
-            return {};
-        case 0:
-            return QString::fromStdString(resources_[row].name.filename());
-        case 1:
-            return static_cast<int>(resources_[row].size);
-        }
-    }
-    return {};
-}
-
-Qt::ItemFlags ContainerModel::flags(const QModelIndex& index) const
-{
-    Qt::ItemFlags defaultFlags = QAbstractTableModel::flags(index);
-
-    if (index.isValid()) {
-        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
-    } else {
-        return Qt::ItemIsDropEnabled | defaultFlags;
-    }
 }
 
 bool ContainerModel::canDropMimeData(const QMimeData* mime, Qt::DropAction action, int row, int column, const QModelIndex& parent) const
@@ -175,6 +214,33 @@ bool ContainerModel::canDropMimeData(const QMimeData* mime, Qt::DropAction actio
     return true;
 }
 
+int ContainerModel::columnCount(const QModelIndex&) const
+{
+    return cols_;
+}
+
+QVariant ContainerModel::data(const QModelIndex& index, int role) const
+{
+    if (!index.isValid())
+        return QVariant();
+
+    size_t row = static_cast<size_t>(index.row());
+
+    if (role == Qt::DecorationRole && index.column() == 0) {
+        return restypeToIcon(resources_[row].name.type);
+    } else if (role == Qt::DisplayRole) {
+        switch (index.column()) {
+        default:
+            return {};
+        case 0:
+            return QString::fromStdString(resources_[row].name.filename());
+        case 1:
+            return static_cast<int>(resources_[row].size);
+        }
+    }
+    return {};
+}
+
 bool ContainerModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
 {
     if (!canDropMimeData(data, action, row, column, parent))
@@ -193,9 +259,28 @@ bool ContainerModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
     return true;
 }
 
-Qt::DropActions ContainerModel::supportedDropActions() const
+Qt::ItemFlags ContainerModel::flags(const QModelIndex& index) const
 {
-    return Qt::CopyAction;
+    Qt::ItemFlags defaultFlags = QAbstractTableModel::flags(index);
+
+    if (index.isValid()) {
+        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
+    } else {
+        return Qt::ItemIsDropEnabled | defaultFlags;
+    }
+}
+
+QVariant ContainerModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (!container_) { return {}; }
+    if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
+        return {};
+
+    if (section == 0) {
+        return "Resource";
+    } else {
+        return "Size (bytes)";
+    }
 }
 
 QMimeData* ContainerModel::mimeData(const QModelIndexList& indexes) const
@@ -220,4 +305,31 @@ QMimeData* ContainerModel::mimeData(const QModelIndexList& indexes) const
 QStringList ContainerModel::mimeTypes() const
 {
     return QStringList() << "text/uri-list";
+}
+
+bool ContainerModel::removeRows(int row, int count, const QModelIndex& index)
+{
+    nw::Erf* erf = nullptr;
+    if (!(erf = dynamic_cast<nw::Erf*>(container_))) {
+        return false;
+    }
+
+    Q_UNUSED(index);
+    beginRemoveRows(QModelIndex(), row, row + count - 1);
+    for (int i = 0; i < count; ++i) {
+        erf->erase(resources_[row].name);
+        resources_.erase(std::begin(resources_) + row);
+    }
+    endRemoveRows();
+    return true;
+}
+
+int ContainerModel::rowCount(const QModelIndex& parent) const
+{
+    return !parent.isValid() ? static_cast<int>(container_->size()) : 0;
+}
+
+Qt::DropActions ContainerModel::supportedDropActions() const
+{
+    return Qt::CopyAction;
 }
