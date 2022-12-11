@@ -18,22 +18,34 @@ jobs:
       vcpkg-tag: "2022.09.27"
       VCPKG_ROOT: "c:/vcpkg_root/"
       VCPKG_DEFAULT_BINARY_CACHE: "c:/vcpkg_root/.cache"
+      CCACHE_DIR: "${{ github.workspace }}/ccache/"
+      CCACHE_BASEDIR: "${{ github.workspace }}/ccache/"
+      SCCACHE_DIR: "${{ github.workspace }}/ccache/"
+      SCCACHE_BASEDIR: "${{ github.workspace }}/ccache/"
 
     name: build on windows
     runs-on: windows-2019
 
     steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - uses: lukka/get-cmake@latest
+
+      - name: install dependencies
+        if: matrix.os == 'windows-2019'
+        run: |
+          choco install sccache ninja
+
+      - name: Get current date
+        run: |
+          echo "DATE=$(Get-Date -Format yyyy-MM-dd)" | Out-File -FilePath $env:GITHUB_ENV -Append
+
       - name: Visual Studio shell
         uses: egor-tensin/vs-shell@v2
         with:
           arch: x64
-
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
-
-      # Install latest CMake.
-      - uses: lukka/get-cmake@latest
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
@@ -51,15 +63,14 @@ jobs:
 
       - name: cache vcpkg
         id: cache-vcpkg
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-vcpgk3
+        uses: actions/cache@v3
         with:
           path: |
             ${{ github.workspace }}/vcpkg/.cache
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.vcpkg-tag }}-${{ hashFiles('vcpkg.json') }}
+            ${{ github.workspace }}/ccache
+          key: ${{ runner.os }}-build-${{ env.vcpkg-tag }}-${{ env.DATE }}-${{ hashFiles('vcpkg.json') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.vcpkg-tag }}
+            ${{ runner.os }}-build-
 
       - name: Make cache dir
         run: mkdir "${{env.VCPKG_DEFAULT_BINARY_CACHE}}"

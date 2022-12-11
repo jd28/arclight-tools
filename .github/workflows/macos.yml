@@ -19,17 +19,25 @@ jobs:
       VCPKG_ROOT: "${{ github.workspace }}/vcpkg/"
       VCPKG_DEFAULT_BINARY_CACHE: "${{ github.workspace }}/vcpkg/.cache"
       MACOSX_DEPLOYMENT_TARGET: "10.15"
+      CCACHE_DIR: "${{ github.workspace }}/ccache/"
+      CCACHE_BASEDIR: "${{ github.workspace }}/ccache/"
+      SCCACHE_DIR: "${{ github.workspace }}/ccache/"
+      SCCACHE_BASEDIR: "${{ github.workspace }}/ccache/"
 
     name: build on macOS
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
 
       # Install latest CMake.
       - uses: lukka/get-cmake@latest
+
+      - name: Get current date
+        run: |
+          echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: install non-vcpkg dependencies
         env:
@@ -38,7 +46,13 @@ jobs:
           HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK: "ON"
           HOMEBREW_NO_INSTALL_CLEANUP: "ON"
         run: |
-          brew install pkg-config automake ninja
+          brew install pkg-config automake ninja ccache
+
+      - name: Set up ccache
+        run: |
+          ccache --set-config=cache_dir=${{ github.workspace }}/ccache
+          ccache --set-config=max_size=500M
+          ccache --set-config=compression=true
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
@@ -56,15 +70,14 @@ jobs:
 
       - name: cache vcpkg
         id: cache-vcpkg
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-vcpgk-v4
+        uses: actions/cache@v3
         with:
           path: |
             ${{ github.workspace }}/vcpkg/.cache
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.vcpkg-tag }}-${{ hashFiles('vcpkg.json') }}
+            ${{ github.workspace }}/ccache
+          key: ${{ runner.os }}-build-${{ env.vcpkg-tag }}-${{ env.DATE }}-${{ hashFiles('vcpkg.json') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.vcpkg-tag }}
+            ${{ runner.os }}-build-
 
       - name: Make cache dir
         if: steps.cache-vcpkg.outputs.cache-hit != 'true'
