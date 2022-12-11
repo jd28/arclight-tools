@@ -11,7 +11,7 @@ if [[ -z "${Qt6_DIR}" ]]; then
 fi
 
 echo "Configuring..."
-cmake --preset macos-default
+cmake --preset macos
 
 echo "Building..."
 cmake --build --preset default
