@@ -11,4 +11,4 @@ target_link_libraries(arclight-external PRIVATE
     Qt5::Gui
 )
 
-add_subdirectory(libnw)
+add_subdirectory(rollnw)

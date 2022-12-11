@@ -11,7 +11,7 @@ LanguageMenu::LanguageMenu(QWidget* parent)
 
 #define CREATE_LANG_ACTION(lang, id)                                             \
     do {                                                                         \
-        act = new QAction(tr(LIBNW_STRINGIFY(lang)), languageActions);           \
+        act = new QAction(tr(ROLLNW_STRINGIFY(lang)), languageActions);           \
         this->addAction(act);                                                    \
         act->setCheckable(true);                                                 \
         act->setData(static_cast<int>(id));                                      \

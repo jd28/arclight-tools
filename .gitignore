@@ -6,6 +6,7 @@ vcpkg_installed/
 *.so
 *.dylib
 *.dll
+.cache
 
 # IDEs
 .vscode/

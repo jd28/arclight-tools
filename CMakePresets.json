@@ -50,7 +50,7 @@
             }
         },
         {
-            "name": "macos-default",
+            "name": "macos",
             "inherits": "default",
             "displayName": "Default Config for macOS",
             "cacheVariables": {

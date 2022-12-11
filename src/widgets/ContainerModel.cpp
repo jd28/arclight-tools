@@ -1,5 +1,6 @@
 #include "ContainerModel.hpp"
 
+#include "nw/util/platform.hpp"
 #include "util/restypeicons.h"
 
 extern "C" {
@@ -114,14 +115,13 @@ void ContainerModel::addFiles(const QStringList& files)
     }
 
     for (const auto& f : files) {
-        auto p = fs::u8path(f.toStdString());
+        fs::path p{f.toStdString()};
         auto r = nw::Resource::from_path(p);
         if (!r.valid()) {
             // Put message eventually.
             continue;
         }
-        LOG_F(INFO, "type: {}, is_container: {}", r.type, nw::ResourceType::is_container(r.type));
-        if (nw::ResourceType::is_container(r.type)) {
+        if (nw::ResourceType::check_category(nw::ResourceType::container, r.type)) {
             mergeFiles({f});
         } else if (erf->contains(r)) {
             bool yes = false;
@@ -151,7 +151,7 @@ void ContainerModel::mergeFiles(const QStringList& files)
     }
 
     for (const auto& f : files) {
-        auto p = fs::u8path(f.toStdString());
+        fs::path p{f.toStdString()};
         auto r = nw::Resource::from_path(p);
         if (!r.valid()) {
             // Put message eventually.
@@ -291,7 +291,7 @@ QMimeData* ContainerModel::mimeData(const QModelIndexList& indexes) const
         size_t row = static_cast<size_t>(idx.row());
         auto name = resources_[row].name.filename();
         container_->extract_by_glob(name, container_->working_directory());
-        auto fn = (container_->working_directory() / name).u8string();
+        auto fn = nw::path_to_string(container_->working_directory() / name);
         auto url = QUrl::fromLocalFile(QString::fromStdString(fn));
         if (!urls.contains(url)) {
             urls << url;

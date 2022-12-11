@@ -23,8 +23,8 @@ add_library(arclight-widgets STATIC
 )
 
 target_include_directories(arclight-widgets PRIVATE
-    ${CMAKE_SOURCE_DIR}/external/libnw/external
-    ${CMAKE_SOURCE_DIR}/external/libnw/lib
+    ${CMAKE_SOURCE_DIR}/external/rollnw/external
+    ${CMAKE_SOURCE_DIR}/external/rollnw/lib
     ${CMAKE_SOURCE_DIR}/external/ZFontIcon
     ${CMAKE_SOURCE_DIR}/external/
 )
