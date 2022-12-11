@@ -7,26 +7,33 @@
 
 ### The Goal
 
-This project is to ask, if one was to start today, what would the NWN Toolset?  What would be its features, its goals, and philosophy.  Above all, learn new things.
+This project is to ask: if one was to start today, what would the NWN Toolset be?  What technologies would it use, what would be its features, its goals, and philosophy.
 
-It accepts from the beginning, maybe there *shouldn't* even be a Toolset and that functionality should be just one other mode of the game (i.e. a devclient.exe, analgous to the dmclient.exe).  But that's something only [Beamdog](https://www.beamdog.com) could do.
+It accepts from the beginning, maybe there *shouldn't* even be a Toolset and that functionality should be just one other mode of the game (i.e. a devclient.exe, analogous to the dmclient.exe).  But that's something only [Beamdog](https://www.beamdog.com) could do.
 
 ### The Philosophy
 
-Unlike other projects of this sort, instead of starting work on some massive project and filling in bits and pieces, this starts with small discrete utilities (see below) whose widgets/functionality can later be welded together to create something that is more than the sum of its parts, that have the modern features one excepts, and that might be useful to others.
+Unlike other projects of this sort, instead of starting work on some massive project and filling in bits and pieces, this starts with small discrete utilities that have the modern features one expects and the widgets/functionality of which can later be welded together to create something that is more than the sum of its parts.
+
+### Platforms
+
+- Linux: The latest LTS of Ubuntu, roughly
+- macOS:
+- Windows: Windows 10 and above, Visual Studio 2019 and above
 
 ## erfherder
 
-erfherder is a ERF editor.  It's features include:
+erfherder is an editor for [BioWare's ERF File Format](docs/bioware_aurora_engine_file_formats/Bioware_Aurora_ERF_Format.pdf).  It's features include:
 
+* Everything in nwhak.exe
 * Drag and Drop support.
 * Very simple, but effective Fuzzy Search filtering.
 
 ![erfherder](screenshots/erfherder-2022-03-27.gif)
 
-## Acknowlegements, Credits, & Inspirations
+## Acknowledgements, Credits, & Inspirations
 
-- [Bioware](https://bioware.com), [Beamdog](https://beamdog.com) - The game itself
+- [BioWare](https://bioware.com), [Beamdog](https://beamdog.com) - The game itself
 - [Qt](https://www.qt.io) - Gui
 - [vcpkg](https://github.com/microsoft/vcpkg) - Package Management
 - [neveredit](https://github.com/sumpfork/neveredit) - Inspiration

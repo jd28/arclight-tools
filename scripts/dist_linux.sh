@@ -5,8 +5,8 @@ if [[ -z "${VCPKG_ROOT}" ]]; then
   exit 1
 fi
 
-if [[ -z "${Qt5_DIR}" ]]; then
-  echo "Environment variable Qt5_DIR not set, do you have Qt installed?"
+if [[ -z "${Qt6_DIR}" ]]; then
+  echo "Environment variable Qt6_DIR not set, do you have Qt installed?"
   exit 1
 fi
 

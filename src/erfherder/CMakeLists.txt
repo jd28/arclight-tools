@@ -1,4 +1,5 @@
-find_package(Qt5 COMPONENTS Widgets Multimedia MultimediaWidgets REQUIRED)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 set(SRC_FILES
     main.cpp
@@ -44,6 +45,5 @@ target_link_libraries(erfherder PRIVATE
     arclight-widgets
     nw
     arclight-external
-    Qt5::Widgets
-    Qt5::Multimedia
+    Qt6::Widgets
 )
