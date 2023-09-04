@@ -3,17 +3,9 @@
 [![macos](https://github.com/jd28/arclight/actions/workflows/macos.yml/badge.svg)](https://github.com/jd28/arclight/actions?query=workflow%3Amacos)
 [![windows](https://github.com/jd28/arclight/actions/workflows/windows.yml/badge.svg)](https://github.com/jd28/arclight/actions?query=workflow%3Awindows)
 
-# Arclight
+# Arclight Tools
 
-### The Goal
-
-This project is to ask: if one was to start today, what would the NWN Toolset be?  What technologies would it use, what would be its features, its goals, and philosophy.
-
-It accepts from the beginning, maybe there *shouldn't* even be a Toolset and that functionality should be just one other mode of the game (i.e. a devclient.exe, analogous to the dmclient.exe).  But that's something only [Beamdog](https://www.beamdog.com) could do.
-
-### The Philosophy
-
-Unlike other projects of this sort, instead of starting work on some massive project and filling in bits and pieces, this starts with small discrete utilities that have the modern features one expects and the widgets/functionality of which can later be welded together to create something that is more than the sum of its parts.
+Tools subproject of something referred to as Arclight
 
 ### Platforms
 
