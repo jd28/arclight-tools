@@ -59,9 +59,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-
 
-      - name: Make cache dir
-        run: mkdir "${{env.VCPKG_DEFAULT_BINARY_CACHE}}"
-
       - name: Configure & Build
         run: .\scripts\dist_win.bat
 
