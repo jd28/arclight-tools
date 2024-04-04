@@ -2,7 +2,7 @@
 
 #include "TlkModel.hpp"
 
-#include <nw/legacy/Tlk.hpp>
+#include <nw/i18n/Tlk.hpp>
 
 #include <QFrame>
 

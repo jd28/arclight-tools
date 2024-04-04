@@ -39,7 +39,6 @@ int main(int argc, char* argv[])
 
     // FA6 Free
     ZFontIcon::addFont(":/fa6/" + Fa6::FA6_TTF_FILE_FREE_SOLID);
-    ZFontIcon::addFont(":/fa6/" + Fa6::FA6_TTF_FILE_FREE_REGULAR);
 
     MainWindow main;
 

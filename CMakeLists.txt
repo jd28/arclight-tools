@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.21)
 project(arclight VERSION 1.0.0 LANGUAGES CXX C)
 set (CMAKE_CXX_STANDARD 20)
 
+if(POLICY CMP0091)
+  cmake_policy(SET CMP0091 NEW)
+endif()
+
 include(cmake/PreventInSourceBuilds.cmake)
 include(cmake/ProjectSettings.cmake)
 
@@ -16,8 +20,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GN
 endif()
 
 if(MSVC)
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_RELEASE} /MTd")
 elseif(UNIX AND NOT APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-sized-deallocation")
 endif()

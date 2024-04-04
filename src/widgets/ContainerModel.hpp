@@ -33,7 +33,7 @@ public:
     explicit ContainerModel(nw::Container* container, QObject* parent = nullptr);
 
     void addFile(const nw::Resource& res, const std::filesystem::path& file);
-    void addFile(const nw::Resource& res, const nw::ByteArray& bytes);
+    void addFile(const nw::Resource& res, const nw::ResourceData& bytes);
     void addFiles(const QStringList& files);
     void mergeFiles(const QStringList& files);
     void setColumnCount(int cols);

@@ -15,9 +15,6 @@ jobs:
   build:
     env:
       buildDir: "${{ github.workspace }}/build/"
-      vcpkg-tag: "2022.09.27"
-      VCPKG_ROOT: "c:/vcpkg_root/"
-      VCPKG_DEFAULT_BINARY_CACHE: "c:/vcpkg_root/.cache"
       CCACHE_DIR: "${{ github.workspace }}/ccache/"
       CCACHE_BASEDIR: "${{ github.workspace }}/ccache/"
       SCCACHE_DIR: "${{ github.workspace }}/ccache/"
@@ -50,25 +47,15 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: 6.3.2
+          version: 6.7.0
           cache: true
 
-      - name: download vcpkg
-        run: |
-          git clone https://github.com/microsoft/vcpkg c:/vcpkg_root
-          pushd c:/vcpkg_root
-          git checkout --force ${{ env.vcpkg-tag }}
-          ./bootstrap-vcpkg.bat
-          popd
-
-      - name: cache vcpkg
-        id: cache-vcpkg
+      - name: cache ccache
         uses: actions/cache@v3
         with:
           path: |
-            ${{ github.workspace }}/vcpkg/.cache
             ${{ github.workspace }}/ccache
-          key: ${{ runner.os }}-build-${{ env.vcpkg-tag }}-${{ env.DATE }}-${{ hashFiles('vcpkg.json') }}
+          key: ${{ runner.os }}-build-${{ env.DATE }}
           restore-keys: |
             ${{ runner.os }}-build-
 
@@ -77,12 +64,6 @@ jobs:
 
       - name: Configure & Build
         run: .\scripts\dist_win.bat
-
-      - uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: vcpkg-logs
-          path: ${{env.VCPKG_ROOT}}/buildtrees/**/*.log
 
       - uses: actions/upload-artifact@v2
         with:

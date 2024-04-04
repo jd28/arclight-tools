@@ -45,7 +45,9 @@ void ContainerSortFilterProxyModel::onFilterUpdated(const QString& filter)
 
 bool ContainerSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
 {
-    if (filter_empty_) { return true; }
+    if (filter_empty_) {
+        return true;
+    }
 
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     auto data = index.data(Qt::DisplayRole);
@@ -85,11 +87,11 @@ void ContainerModel::addFile(const nw::Resource& res, const fs::path& file)
     }
 }
 
-void ContainerModel::addFile(const nw::Resource& res, const nw::ByteArray& bytes)
+void ContainerModel::addFile(const nw::Resource& res, const nw::ResourceData& data)
 {
     if (auto e = dynamic_cast<nw::Erf*>(container_)) {
         if (e->erase(res)) {
-            e->add(res, bytes);
+            e->add(res, data.bytes);
             auto it = std::find_if(std::begin(resources_), std::end(resources_), [&res](const auto& rd) {
                 return rd.name == res;
             });
@@ -98,7 +100,7 @@ void ContainerModel::addFile(const nw::Resource& res, const nw::ByteArray& bytes
             emit dataChanged(index(row, 0), index(row, columnCount()));
         } else {
             beginInsertRows(QModelIndex(), rowCount(), rowCount());
-            e->add(res, bytes);
+            e->add(res, data.bytes);
             resources_.push_back(e->stat(res));
             endInsertRows();
         }
@@ -199,14 +201,18 @@ bool ContainerModel::canDropMimeData(const QMimeData* mime, Qt::DropAction actio
     Q_UNUSED(column);
     Q_UNUSED(parent);
 
-    if (!mime->hasUrls()) { return false; }
+    if (!mime->hasUrls()) {
+        return false;
+    }
     for (const auto& url : mime->urls()) {
         QFileInfo fn{url.fileName()};
         QFileInfo path{url.toLocalFile()};
         if (path.absolutePath().toStdString() == container_->working_directory()) {
             return false;
         }
-        if (path.isDir()) { return false; }
+        if (path.isDir()) {
+            return false;
+        }
         if (nw::ResourceType::from_extension(fn.completeSuffix().toStdString()) == nw::ResourceType::invalid) {
             return false;
         }
@@ -272,7 +278,9 @@ Qt::ItemFlags ContainerModel::flags(const QModelIndex& index) const
 
 QVariant ContainerModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (!container_) { return {}; }
+    if (!container_) {
+        return {};
+    }
     if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
         return {};
 

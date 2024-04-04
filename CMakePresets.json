@@ -13,17 +13,21 @@
             "binaryDir": "${sourceDir}/build",
             "generator": "Ninja",
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": {
-                    "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                    "type": "FILEPATH"
+                "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin",
+                "ROLLNW_BUILD_BENCHMARKS": {
+                    "type": "BOOL",
+                    "value": "OFF"
                 },
-                "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin"
+                "BUILD_TESTING": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
             }
         },
         {
-            "name": "windows-default",
+            "name": "windows",
             "inherits": "default",
-            "generator": "NMake Makefiles",
+            "generator": "Ninja",
             "displayName": "Windows-only configuration",
             "description": "This build is only available on Windows",
             "binaryDir": "${sourceDir}/build",
@@ -37,16 +41,7 @@
                 "strategy": "external"
             },
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin",
-                "CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG": "${sourceDir}/bin",
-                "CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE": "${sourceDir}/bin",
-                "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/bin",
-                "CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG": "${sourceDir}/bin",
-                "CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE": "${sourceDir}/bin",
-                "VCPKG_TARGET_TRIPLET": "x64-windows-static",
-                "VCPKG_HOST_TRIPLET": "x64-windows-static",
-                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+                "CMAKE_BUILD_TYPE": "Release"
             }
         },
         {

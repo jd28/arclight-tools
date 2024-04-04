@@ -15,9 +15,6 @@ jobs:
   build:
     env:
       buildDir: "${{ github.workspace }}/build/"
-      vcpkg-tag: "2022.09.27"
-      VCPKG_ROOT: "${{ github.workspace }}/vcpkg/"
-      VCPKG_DEFAULT_BINARY_CACHE: "${{ github.workspace }}/vcpkg/.cache"
       CCACHE_DIR: "${{ github.workspace }}/ccache/"
       CCACHE_BASEDIR: "${{ github.workspace }}/ccache/"
       SCCACHE_DIR: "${{ github.workspace }}/ccache/"
@@ -64,41 +61,21 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: 6.3.2
+          version: 6.7.0
           cache: true
 
-      - name: download vcpkg
-        run: |
-          git clone https://github.com/microsoft/vcpkg ${{ github.workspace }}/vcpkg || true
-          pushd vcpkg
-          git checkout --force ${{ env.vcpkg-tag }}
-          ./bootstrap-vcpkg.sh
-          popd
-
-      - name: cache vcpkg
-        id: cache-vcpkg
+      - name: cache ccache
         uses: actions/cache@v3
         with:
           path: |
-            ${{ github.workspace }}/vcpkg/.cache
             ${{ github.workspace }}/ccache
-          key: ${{ runner.os }}-build-${{ env.vcpkg-tag }}-${{ env.DATE }}-${{ hashFiles('vcpkg.json') }}
+          key: ${{ runner.os }}-build-${{ env.DATE }} }}
           restore-keys: |
             ${{ runner.os }}-build-
-
-      - name: Make cache dir
-        if: steps.cache-vcpkg.outputs.cache-hit != 'true'
-        run: mkdir -p "${{ github.workspace }}/vcpkg/.cache"
 
       - name: Configure & Build
         run: |
           ./scripts/dist_linux.sh
-
-      - uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: vcpkg-logs
-          path: ${{env.VCPKG_ROOT}}/buildtrees/**/*.log
 
       - uses: actions/upload-artifact@v2
         with:

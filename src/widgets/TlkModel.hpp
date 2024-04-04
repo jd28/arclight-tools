@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nw/legacy/Tlk.hpp>
+#include <nw/i18n/Tlk.hpp>
 
 #include <QAbstractTableModel>
 
