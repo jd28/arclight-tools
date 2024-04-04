@@ -46,3 +46,9 @@ target_link_libraries(erfherder PRIVATE
     arclight-external
     Qt6::Widgets
 )
+
+if(LINUX)
+target_link_libraries(erfherder PRIVATE
+    dl
+)
+endif()
