@@ -14,4 +14,5 @@ cmake --build --preset default
 echo "Running macdeployqt..."
 pushd bin/ > /dev/null
 ${Qt6_DIR}/bin/macdeployqt erfherder.app -dmg -always-overwrite
+${Qt6_DIR}/bin/macdeployqt texi.app -dmg -always-overwrite
 popd > /dev/null
