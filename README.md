@@ -23,6 +23,12 @@ erfherder is an editor for [BioWare's ERF File Format](docs/bioware_aurora_engin
 
 ![erfherder](screenshots/erfherder-2022-03-27.gif)
 
+## texi
+
+A super mid and basic texture gallery viewer.  ERF's only for now.  There are probably issues on account of a lack of knowledge.  Screenshot is using Bill Harper's great work [HD Clubs](https://neverwintervault.org/project/nwnee/prefab/item/hd-clubs).
+
+![texi](screenshots/texi-2024-04-04.gif)
+
 ## Acknowledgements, Credits, & Inspirations
 
 - [BioWare](https://bioware.com), [Beamdog](https://beamdog.com) - The game itself
