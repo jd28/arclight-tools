@@ -11,7 +11,7 @@ Tools subproject of something referred to as Arclight
 
 - Linux: The latest LTS of Ubuntu, roughly
 - macOS:
-- Windows: Windows 10 and above, Visual Studio 2019 and above
+- Windows: Windows 10 and above, Visual Studio 2019 seems to be the latest Qt supported version
 
 ## erfherder
 
@@ -25,9 +25,9 @@ erfherder is an editor for [BioWare's ERF File Format](docs/bioware_aurora_engin
 
 ## texi
 
-A super mid and basic texture gallery viewer.  ERF's only for now.  There are probably issues on account of a lack of knowledge.  Screenshot is using Bill Harper's great work [HD Clubs](https://neverwintervault.org/project/nwnee/prefab/item/hd-clubs).
+A super mid and basic texture gallery viewer.  It can open Key, Erf, and Zip containers.  Screenshot is using NWN:EE main key file circa 36-2.
 
-![texi](screenshots/texi-2024-04-04.gif)
+![texi](screenshots/texi-2024-04-09.gif)
 
 ## Acknowledgements, Credits, & Inspirations
 

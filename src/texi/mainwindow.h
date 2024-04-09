@@ -9,11 +9,6 @@
 
 #include <string>
 
-struct Payload {
-    nw::Image image;
-    QImage qimage;
-};
-
 namespace Ui {
 class MainWindow;
 }
@@ -25,7 +20,6 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
-    void loadIcons();
     void open(const QString& path);
 
 public slots:
@@ -33,9 +27,6 @@ public slots:
 
 private:
     Ui::MainWindow* ui;
-    std::unique_ptr<nw::Container> container_;
-    std::vector<nw::Image> images_;
-    std::vector<std::string> labels_;
 };
 
 #endif // MAINWINDOW_H

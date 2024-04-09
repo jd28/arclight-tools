@@ -5,6 +5,8 @@ set(SRC_FILES
     mainwindow.h
     mainwindow.cpp
     mainwindow.ui
+    texuregallerymodel.h
+    texuregallerymodel.cpp
     ${CMAKE_SOURCE_DIR}/external/ZFontIcon/ZFontIcon/Fonts.qrc
 )
 
@@ -34,6 +36,7 @@ endif()
 target_include_directories(texi PRIVATE
     ../
     ${CMAKE_SOURCE_DIR}/external/rollnw/external
+    ${CMAKE_SOURCE_DIR}/external/rollnw/external/minizip/include
     ${CMAKE_SOURCE_DIR}/external/rollnw/lib
     ${CMAKE_SOURCE_DIR}/external/ZFontIcon
     ${CMAKE_SOURCE_DIR}/external/
@@ -43,6 +46,7 @@ target_link_libraries(texi PRIVATE
     arclight-widgets
     nw
     arclight-external
+    minizip
     Qt6::Widgets
 )
 
