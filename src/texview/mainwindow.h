@@ -24,6 +24,7 @@ public:
 
 public slots:
     void onActionOpen();
+    void onActionOpenFolder();
 
 private:
     Ui::MainWindow* ui;

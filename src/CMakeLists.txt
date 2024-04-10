@@ -4,4 +4,4 @@ set(CMAKE_AUTOUIC ON)
 
 add_subdirectory(widgets)
 add_subdirectory(erfherder)
-add_subdirectory(texi)
+add_subdirectory(texview)
