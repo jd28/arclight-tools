@@ -1,6 +1,7 @@
 #include "texuregallerymodel.h"
 
 #include "nw/formats/Image.hpp"
+#include "nw/formats/Plt.hpp"
 #include "nw/log.hpp"
 #include "nw/resources/Directory.hpp"
 #include "nw/resources/Erf.hpp"
@@ -35,9 +36,6 @@ TexureGalleryModel::TexureGalleryModel(const QString& path, QObject* parent)
     container_ = load_container(path.toStdString());
 
     auto cb = [this](const nw::Resource& resource) {
-        if (resource.type == nw::ResourceType::plt) {
-            return;
-        }
         if (nw::ResourceType::check_category(nw::ResourceType::texture, resource.type)) {
             labels_.push_back(resource);
         }
@@ -72,21 +70,39 @@ QVariant TexureGalleryModel::data(const QModelIndex& index, int role) const
         if (it != std::end(cache_)) {
             return it->second;
         } else {
-            nw::Image img{container_->demand(labels_[index.row()])};
-            if (!img.valid()) {
-                QVariant();
-            }
+            if (labels_[index.row()].type == nw::ResourceType::plt) {
+                nw::Plt plt{container_->demand(labels_[index.row()])};
+                if (!plt.valid()) {
+                    QVariant();
+                }
 
-            QImage qi(img.data(), img.width(), img.height(),
-                img.channels() == 4 ? QImage::Format_RGBA8888 : QImage::Format_RGB888);
-            if (qi.height() > 128 || qi.width() > 128) {
-                qi = qi.scaled(128, 128, Qt::KeepAspectRatio);
+                std::vector<uint8_t> colors;
+                colors.resize(plt.width() * plt.height());
+                for (size_t i = 0; i < plt.width() * plt.height(); ++i) {
+                    colors[i] = plt.pixels()[i].color;
+                }
+
+                QImage qi(colors.data(), plt.width(), plt.height(), QImage::Format_Grayscale8);
+                auto it2 = cache_.emplace(labels_[index.row()], QPixmap::fromImage(qi));
+                return it2.first->second;
+            } else {
+                nw::Image img{container_->demand(labels_[index.row()])};
+                if (!img.valid()) {
+                    QVariant();
+                }
+
+                QImage qi(img.data(), img.width(), img.height(),
+                    img.channels() == 4 ? QImage::Format_RGBA8888 : QImage::Format_RGB888);
+                if (qi.height() > 128 || qi.width() > 128) {
+                    qi = qi.scaled(128, 128, Qt::KeepAspectRatio);
+                }
+                if (img.is_bio_dds()) {
+                    qi.mirror();
+                }
+
+                auto it2 = cache_.emplace(labels_[index.row()], QPixmap::fromImage(qi));
+                return it2.first->second;
             }
-            if (img.is_bio_dds()) {
-                qi.mirror();
-            }
-            auto it2 = cache_.emplace(labels_[index.row()], QPixmap::fromImage(qi));
-            return it2.first->second;
         }
     } else if (role == Qt::SizeHintRole) {
         return QSize(128, 150);

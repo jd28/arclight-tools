@@ -25,7 +25,7 @@ erfherder is an editor for [BioWare's ERF File Format](docs/bioware_aurora_engin
 
 ## texview
 
-A super mid and basic texture gallery viewer.  It can open Key, Erf, and Zip containers.  Screenshot is using NWN:EE main key file circa 36-2.
+A super mid and basic texture gallery viewer for Bioware DDS, Standard DDS, TGA, and PLT texures.  It can open Key, Erf, and Zip containers.  Screenshot is using NWN:EE main key file circa 36-2.
 
 ![texview](screenshots/texi-2024-04-09.gif)
 
