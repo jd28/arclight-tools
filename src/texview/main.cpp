@@ -42,9 +42,9 @@ int main(int argc, char* argv[])
 
     MainWindow main;
 
-    // QObject::connect(&app, &QApplication::aboutToQuit, &main, &MainWindow::writeSettings);
+    QObject::connect(&app, &QApplication::aboutToQuit, &main, &MainWindow::writeSettings);
 
-    // main.restoreWindow();
+    main.restoreWindow();
     main.show();
     return app.exec();
 }

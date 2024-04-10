@@ -28,6 +28,13 @@ void MainWindow::open(const QString& path)
     ui->imageGallery->setModel(new TexureGalleryModel(path));
 }
 
+void MainWindow::restoreWindow()
+{
+    auto geom = settings_.value("Window/geometry");
+    if (!geom.isNull()) {
+        restoreGeometry(geom.toByteArray());
+    }
+}
 
 void MainWindow::onActionAbout()
 {
@@ -65,6 +72,11 @@ void MainWindow::onActionOpenFolder()
         return;
     }
     open(fn);
+}
+
+void MainWindow::writeSettings()
+{
+    settings_.setValue("Window/geometry", saveGeometry());
 }
 
 MainWindow::~MainWindow()
