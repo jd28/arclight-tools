@@ -17,17 +17,18 @@ public:
 
     void open(const QString& path);
     void restoreWindow();
+    void writeSettings();
+
+    void closeEvent(QCloseEvent* event) override;
 
 public slots:
     void onActionAbout();
     void onActionAboutQt();
     void onActionOpen();
     void onActionOpenFolder();
-    void writeSettings();
 
 private:
     Ui::MainWindow* ui;
-    QSettings settings_;
 };
 
 #endif // MAINWINDOW_H

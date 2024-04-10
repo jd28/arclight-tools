@@ -41,8 +41,6 @@ int main(int argc, char* argv[])
     ZFontIcon::addFont(":/fa6/" + Fa6::FA6_TTF_FILE_FREE_SOLID);
 
     MainWindow main;
-    QObject::connect(&app, &QApplication::aboutToQuit, &main, &MainWindow::writeSettings);
-
     main.restoreWindow();
     main.show();
     return app.exec();

@@ -1,12 +1,14 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "nw/log.hpp"
+
 #include "texuregallerymodel.h"
 
 #include <QFileDialog>
 #include <QImage>
-#include <QtLogging>
 #include <QMessageBox>
+#include <QtLogging>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -20,6 +22,8 @@ MainWindow::MainWindow(QWidget* parent)
     QObject::connect(ui->actionOpen_Folder, &QAction::triggered, this, &MainWindow::onActionOpenFolder);
 }
 
+// -- Methods -----------------------------------------------------------------
+
 void MainWindow::open(const QString& path)
 {
     if (!QFileInfo::exists(path)) {
@@ -30,12 +34,22 @@ void MainWindow::open(const QString& path)
 
 void MainWindow::restoreWindow()
 {
-    auto geom = settings_.value("Window/geometry");
+    QSettings settings("jmd", "texview");
+    auto geom = settings.value("Window/geometry");
     if (!geom.isNull()) {
         restoreGeometry(geom.toByteArray());
     }
 }
 
+// -- Overrides ---------------------------------------------------------------
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    writeSettings();
+    QMainWindow::closeEvent(event);
+}
+
+// -- Slots -------------------------------------------------------------------
 void MainWindow::onActionAbout()
 {
     QMessageBox::about(nullptr, "texview",
@@ -76,7 +90,8 @@ void MainWindow::onActionOpenFolder()
 
 void MainWindow::writeSettings()
 {
-    settings_.setValue("Window/geometry", saveGeometry());
+    QSettings settings("jmd", "texview");
+    settings.setValue("Window/geometry", saveGeometry());
 }
 
 MainWindow::~MainWindow()
