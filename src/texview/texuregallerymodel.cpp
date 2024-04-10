@@ -82,7 +82,9 @@ QVariant TexureGalleryModel::data(const QModelIndex& index, int role) const
                     colors[i] = plt.pixels()[i].color;
                 }
 
+                // These are pre-flipped
                 QImage qi(colors.data(), plt.width(), plt.height(), QImage::Format_Grayscale8);
+                qi.mirror();
                 auto it2 = cache_.emplace(labels_[index.row()], QPixmap::fromImage(qi));
                 return it2.first->second;
             } else {
@@ -96,6 +98,8 @@ QVariant TexureGalleryModel::data(const QModelIndex& index, int role) const
                 if (qi.height() > 128 || qi.width() > 128) {
                     qi = qi.scaled(128, 128, Qt::KeepAspectRatio);
                 }
+
+                // These are pre-flipped
                 if (img.is_bio_dds()) {
                     qi.mirror();
                 }
