@@ -67,6 +67,12 @@ ContainerWidget* MainWindow::current()
     return reinterpret_cast<ContainerWidget*>(ui_->containerTabWidget->currentWidget());
 }
 
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    writeSettings();
+    QMainWindow::closeEvent(event);
+}
+
 void MainWindow::open(const QString& path)
 {
     if (!QFileInfo(path).exists()) { return; }
@@ -106,7 +112,8 @@ void MainWindow::open(const QString& path)
 
 void MainWindow::restoreWindow()
 {
-    auto geom = settings_.value("Window/geometry");
+    QSettings settings("jmd", "erfherder");
+    auto geom = settings.value("Window/geometry");
     if (!geom.isNull()) {
         restoreGeometry(geom.toByteArray());
     }
@@ -126,8 +133,9 @@ void MainWindow::onActionNew()
 void MainWindow::onActionOpen()
 {
     QString fn = QFileDialog::getOpenFileName(this, "Open Erf", "", "Erf (*.erf *.mod *.hak *.nwm *.sav)");
-    if (fn.isEmpty()) { return; }
-    open(fn);
+    if (!fn.isEmpty()) {
+        open(fn);
+    }
 }
 
 void MainWindow::onActionRecent()
@@ -139,22 +147,26 @@ void MainWindow::onActionRecent()
 void MainWindow::onActionImport()
 {
     auto files = QFileDialog::getOpenFileNames(this, "Import...");
-    if (files.isEmpty()) { return; }
-    current()->model()->addFiles(files);
+    if (!files.isEmpty()) {
+        current()->model()->addFiles(files);
+    }
 }
 
 void MainWindow::onActionMerge()
 {
     QStringList files = QFileDialog::getOpenFileNames(this, "Merge Files...", "", "Erf (*.erf *.mod *.hak)");
-    if (files.isEmpty()) { return; }
-    current()->model()->mergeFiles(files);
+    if (!files.isEmpty()) {
+        current()->model()->mergeFiles(files);
+    }
 }
 
 void MainWindow::onActionExport()
 {
     if (!current()) { return; }
+
     auto path = QFileDialog::getExistingDirectory(this, "Export To...");
     if (path.isEmpty()) { return; }
+
     auto select = current()->table()->selectionModel()->selectedRows();
     for (const auto& s : select) {
         auto idx = current()->model()->index(s.row(), 0);
@@ -166,11 +178,13 @@ void MainWindow::onActionExport()
 void MainWindow::onActionExportAll()
 {
     if (!current()) { return; }
+
     auto path = QFileDialog::getExistingDirectory(this, "Export To...");
     if (path.isEmpty()) { return; }
-    auto c = current()->container();
-    if (!c) { return; }
-    c->extract(std::regex(".*"), path.toStdString());
+
+    if (auto c = current()->container()) {
+        c->extract(std::regex(".*"), path.toStdString());
+    }
 }
 
 void MainWindow::onActionDelete()
@@ -199,7 +213,7 @@ void MainWindow::onActionSaveAs()
     QString fn = QFileDialog::getSaveFileName(this, "Save As", "", "Erf (*.erf *.mod *.hak *.nwm *.sav)");
     if (fn.isEmpty()) { return; }
     if (auto e = dynamic_cast<nw::Erf*>(current()->container())) {
-        e->save_as(fs::u8path(fn.toStdString()));
+        e->save_as(fn.toStdString());
         onTabCloseRequested(ui_->containerTabWidget->currentIndex());
         open(fn);
     }
@@ -267,24 +281,26 @@ void MainWindow::onTabCloseRequested(int index)
 
 void MainWindow::readSettings()
 {
-    int size = settings_.beginReadArray("Recent Files");
+    QSettings settings("jmd", "erfherder");
+    int size = settings.beginReadArray("Recent Files");
     for (int i = 0; i < size; ++i) {
-        settings_.setArrayIndex(i);
-        recentFiles_.append(settings_.value("file").toString());
+        settings.setArrayIndex(i);
+        recentFiles_.append(settings.value("file").toString());
     }
-    settings_.endArray();
+    settings.endArray();
 }
 
 void MainWindow::writeSettings()
 {
-    settings_.beginWriteArray("Recent Files", static_cast<int>(recentFiles_.size()));
+    QSettings settings("jmd", "erfherder");
+    settings.beginWriteArray("Recent Files", static_cast<int>(recentFiles_.size()));
     int i = 0;
     for (const auto& f : recentFiles_) {
-        settings_.setArrayIndex(i++);
-        settings_.setValue("file", f);
+        settings.setArrayIndex(i++);
+        settings.setValue("file", f);
     }
-    settings_.endArray();
-    settings_.setValue("Window/geometry", saveGeometry());
+    settings.endArray();
+    settings.setValue("Window/geometry", saveGeometry());
 }
 
 void MainWindow::connectModifiedSlots(ContainerModel* model)

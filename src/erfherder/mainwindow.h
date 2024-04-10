@@ -20,6 +20,9 @@ public:
     void open(const QString& path);
     ContainerWidget* current();
     void restoreWindow();
+    void writeSettings();
+
+    void closeEvent(QCloseEvent* event);
 
 public slots:
     void onActionNew();
@@ -44,8 +47,6 @@ public slots:
     void onRowsInserted(const QModelIndex& parent, int first, int last);
     void onRowsRemoved(const QModelIndex& parent, int first, int last);
 
-    void writeSettings();
-
 private:
     void connectModifiedSlots(ContainerModel* model);
     void enableModificationMenus(bool enabled);
@@ -53,7 +54,6 @@ private:
 
     Ui::MainWindow* ui_;
     ContainerWidget* currentContainer_;
-    QSettings settings_;
     QStringList recentFiles_;
     QList<QAction*> recentActions_;
 
