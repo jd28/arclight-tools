@@ -17,6 +17,8 @@ public:
     void open(const QString& path);
 
 public slots:
+    void onActionAbout();
+    void onActionAboutQt();
     void onActionOpen();
     void onActionOpenFolder();
 
