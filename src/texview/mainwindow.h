@@ -1,13 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <nw/formats/Image.hpp>
-#include <nw/resources/Container.hpp>
-
-#include <QImage>
 #include <QMainWindow>
-
-#include <string>
 
 namespace Ui {
 class MainWindow;
