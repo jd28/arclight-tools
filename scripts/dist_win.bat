@@ -11,5 +11,5 @@ cmake --build --preset default
 echo "Running windeployqt..."
 cd bin/
 %Qt6_DIR%/bin/windeployqt --release erfherder.exe
-%Qt6_DIR%/bin/windeployqt --release texi.exe
+%Qt6_DIR%/bin/windeployqt --release texview.exe
 cd ..

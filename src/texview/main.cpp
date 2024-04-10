@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
     nw::init_logger(argc, argv);
 
     QApplication app{argc, argv};
-    QCoreApplication::setApplicationName("texi");
+    QCoreApplication::setApplicationName("texview");
     QCoreApplication::setApplicationVersion("1.0.0");
 
 #if defined(Q_OS_WIN) || defined(Q_OS_LINUX)
@@ -41,7 +41,6 @@ int main(int argc, char* argv[])
     ZFontIcon::addFont(":/fa6/" + Fa6::FA6_TTF_FILE_FREE_SOLID);
 
     MainWindow main;
-
     QObject::connect(&app, &QApplication::aboutToQuit, &main, &MainWindow::writeSettings);
 
     main.restoreWindow();
