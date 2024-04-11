@@ -34,6 +34,7 @@ TexureGalleryModel::TexureGalleryModel(const QString& path, QObject* parent)
     : QAbstractListModel(parent)
 {
     container_ = load_container(path.toStdString());
+    if (!container_) { return; }
 
     auto cb = [this](const nw::Resource& resource) {
         if (nw::ResourceType::check_category(nw::ResourceType::texture, resource.type)) {
