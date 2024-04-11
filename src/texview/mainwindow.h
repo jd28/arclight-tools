@@ -25,6 +25,7 @@ public:
 public slots:
     void onActionAbout();
     void onActionAboutQt();
+    void onActionExit();
     void onActionOpen();
     void onActionOpenFolder();
     void onActionRecent();

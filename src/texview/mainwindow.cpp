@@ -34,8 +34,14 @@ MainWindow::MainWindow(QWidget* parent)
 
     QObject::connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::onActionAbout);
     QObject::connect(ui->actionAbout_Qt, &QAction::triggered, this, &MainWindow::onActionAboutQt);
+    QObject::connect(ui->actionExit, &QAction::triggered, this, &MainWindow::onActionExit);
     QObject::connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpen);
     QObject::connect(ui->actionOpen_Folder, &QAction::triggered, this, &MainWindow::onActionOpenFolder);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
 }
 
 // -- Methods -----------------------------------------------------------------
@@ -45,7 +51,33 @@ void MainWindow::open(const QString& path)
     if (!QFileInfo::exists(path)) {
         return;
     }
+
+    if (recentFiles_.contains(path)) {
+        recentFiles_.removeOne(path);
+    } else if (recentFiles_.size() >= 10) {
+        recentFiles_.pop_back();
+    }
+    recentFiles_.insert(0, path);
+
+    for (int i = 0; i < recentFiles_.size(); ++i) {
+        recentActions_[i]->setData(recentFiles_[i]);
+        recentActions_[i]->setText(QString::fromStdString(
+            fmt::format("&{} - {}", i + 1, recentFiles_[i].toStdString())));
+        recentActions_[i]->setVisible(true);
+    }
+
     ui->imageGallery->setModel(new TexureGalleryModel(path));
+}
+
+void MainWindow::readSettings()
+{
+    QSettings settings("jmd", "texview");
+    int size = settings.beginReadArray("Recent Files");
+    for (int i = 0; i < size; ++i) {
+        settings.setArrayIndex(i);
+        recentFiles_.append(settings.value("file").toString());
+    }
+    settings.endArray();
 }
 
 void MainWindow::restoreWindow()
@@ -55,6 +87,19 @@ void MainWindow::restoreWindow()
     if (!geom.isNull()) {
         restoreGeometry(geom.toByteArray());
     }
+}
+
+void MainWindow::writeSettings()
+{
+    QSettings settings("jmd", "texview");
+    settings.beginWriteArray("Recent Files", static_cast<int>(recentFiles_.size()));
+    int i = 0;
+    for (const auto& f : recentFiles_) {
+        settings.setArrayIndex(i++);
+        settings.setValue("file", f);
+    }
+    settings.endArray();
+    settings.setValue("Window/geometry", saveGeometry());
 }
 
 // -- Overrides ---------------------------------------------------------------
@@ -86,6 +131,11 @@ void MainWindow::onActionAboutQt()
     QMessageBox::aboutQt(this);
 }
 
+void MainWindow::onActionExit()
+{
+    QApplication::quit();
+}
+
 void MainWindow::onActionOpen()
 {
     QString fn = QFileDialog::getOpenFileName(this, "Open Container", "", "Container (*.erf *.hak *.key *.zip)");
@@ -104,13 +154,8 @@ void MainWindow::onActionOpenFolder()
     open(fn);
 }
 
-void MainWindow::writeSettings()
+void MainWindow::onActionRecent()
 {
-    QSettings settings("jmd", "texview");
-    settings.setValue("Window/geometry", saveGeometry());
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
+    QAction* act = reinterpret_cast<QAction*>(sender());
+    open(act->data().toString());
 }
