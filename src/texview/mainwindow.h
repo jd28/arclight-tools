@@ -17,6 +17,7 @@ public:
 
     void open(const QString& path);
     void restoreWindow();
+    void readSettings();
     void writeSettings();
 
     void closeEvent(QCloseEvent* event) override;
@@ -26,9 +27,13 @@ public slots:
     void onActionAboutQt();
     void onActionOpen();
     void onActionOpenFolder();
+    void onActionRecent();
 
 private:
     Ui::MainWindow* ui;
+
+    QStringList recentFiles_;
+    QList<QAction*> recentActions_;
 };
 
 #endif // MAINWINDOW_H

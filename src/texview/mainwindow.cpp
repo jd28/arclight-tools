@@ -15,6 +15,22 @@ MainWindow::MainWindow(QWidget* parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    readSettings();
+
+    for (int i = 0; i < 10; ++i) {
+        QAction* act = new QAction(this);
+        if (i < recentFiles_.size()) {
+            ui->menuRecent->addAction(act);
+            act->setData(recentFiles_[i]);
+            act->setText(QString::fromStdString(
+                fmt::format("&{} - {}", i + 1, recentFiles_[i].toStdString())));
+        } else {
+            ui->menuRecent->addAction(act);
+            act->setVisible(false);
+        }
+        recentActions_.append(act);
+        QObject::connect(act, &QAction::triggered, this, &MainWindow::onActionRecent);
+    }
 
     QObject::connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::onActionAbout);
     QObject::connect(ui->actionAbout_Qt, &QAction::triggered, this, &MainWindow::onActionAboutQt);
