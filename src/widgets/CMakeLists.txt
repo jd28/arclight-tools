@@ -7,6 +7,9 @@ find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 add_library(arclight-widgets STATIC
+    AbstractTreeModel.cpp
+    AbstractTreeModel.hpp
+
     ContainerModel.cpp
     ContainerModel.hpp
     ContainerWidget.cpp
@@ -28,6 +31,8 @@ add_library(arclight-widgets STATIC
     util/restypeicons.cpp
 )
 
+add_subdirectory(qtpropertybrowser)
+
 target_include_directories(arclight-widgets PRIVATE
     ${CMAKE_SOURCE_DIR}/external/rollnw/external
     ${CMAKE_SOURCE_DIR}/external/rollnw/lib
@@ -38,5 +43,6 @@ target_include_directories(arclight-widgets PRIVATE
 target_link_libraries(arclight-widgets PRIVATE
     nw
     arclight-external
+    qtpropertybrowser
     Qt6::Widgets
 )
