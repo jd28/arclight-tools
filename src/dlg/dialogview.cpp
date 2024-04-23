@@ -1,0 +1,657 @@
+#include "dialogview.h"
+#include "ui_dialogview.h"
+
+#include "dialogmodel.h"
+#include "dialogtreeview.h"
+
+#include "nw/formats/Dialog.hpp"
+#include "nw/kernel/Resources.hpp"
+
+#include "nlohmann/json.hpp"
+
+#include "ZFontIcon/ZFontIcon.h"
+#include "ZFontIcon/ZFont_fa6.h"
+
+#include <QApplication>
+#include <QColor>
+#include <QCompleter>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMenu>
+#include <QPushButton>
+#include <QScreen>
+
+DialogView::DialogView(QString path, QWidget* parent)
+    : QWidget(parent)
+    , ui(new Ui::DialogView)
+    , path_{path}
+{
+    ui->setupUi(this);
+
+    context_menu_ = new QMenu(this);
+    add_ctx_action_ = context_menu_->addAction("Add");
+    add_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("list-add")));
+    context_menu_->addSeparator();
+    copy_ctx_action_ = context_menu_->addAction("Copy");
+    copy_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("edit-copy")));
+    cut_ctx_action_ = context_menu_->addAction("Cut");
+    cut_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("edit-cut")));
+    context_menu_->addSeparator();
+    paste_ctx_action_ = context_menu_->addAction("Paste");
+    paste_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("edit-paste")));
+    paste_link_ctx_action_ = context_menu_->addAction("Paste As Link");
+    paste_link_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("insert-link")));
+    context_menu_->addSeparator();
+    delete_ctx_action_ = context_menu_->addAction("Delete");
+    delete_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("edit-delete")));
+
+    connect(add_ctx_action_, &QAction::triggered, this, &DialogView::onDialogAddNode);
+    connect(copy_ctx_action_, &QAction::triggered, this, &DialogView::onDialogCopyNode);
+    connect(cut_ctx_action_, &QAction::triggered, this, &DialogView::onDialogCutNode);
+    connect(paste_ctx_action_, &QAction::triggered, this, &DialogView::onDialogPasteNode);
+    connect(paste_link_ctx_action_, &QAction::triggered, this, &DialogView::onDialogPasteLinkNode);
+    connect(delete_ctx_action_, &QAction::triggered, this, &DialogView::onDialogDeleteNode);
+
+    ui->playButton->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_play));
+    ui->actionsButton->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_code));
+    ui->languageButton->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_language));
+
+    // Action Script
+    connect(ui->actionScript, &QLineEdit::textChanged, this, &DialogView::onActionScriptChanged);
+
+    // Action Param
+    connect(ui->actionParams, &QTableWidget::cellChanged, this, &DialogView::onActionParamCellChanged);
+    ui->actionParamAdd->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_plus, Qt::green));
+    ui->actionParamDel->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_minus, Qt::red));
+    connect(ui->actionParamAdd, &QPushButton::clicked, this, &DialogView::onActionParamAddClicked);
+    connect(ui->actionParamDel, &QPushButton::clicked, this, &DialogView::onActionParamDelClicked);
+
+    // Action Sound
+    connect(ui->actionSound, &QLineEdit::textChanged, this, &DialogView::onActionSoundChanged);
+
+    // Condition Script
+    connect(ui->conditionScript, &QLineEdit::textChanged, this, &DialogView::onConditionScriptChanged);
+
+    // Condition Param
+    ui->conditionParamsAdd->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_plus, Qt::green));
+    ui->conditionParamsDel->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_minus, Qt::red));
+    connect(ui->conditionParamsAdd, &QPushButton::clicked, this, &DialogView::onConditionParamAddClicked);
+    connect(ui->conditionParamsDel, &QPushButton::clicked, this, &DialogView::onConditionParamDelClicked);
+    connect(ui->conditionParams, &QTableWidget::cellChanged, this, &DialogView::onConditionParamCellChanged);
+
+    // Dialog Text
+    connect(ui->dialogTextEdit, &QTextEdit::textChanged, this, &DialogView::onDialogTextChanged);
+
+    // Dialog View
+    connect(ui->dialogView, &DialogTreeView::customContextMenuRequested, this, &DialogView::onCustomContextMenu);
+
+    // Speakers table
+    ui->speakersListAdd->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_plus, Qt::green));
+    ui->speakersListDel->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_minus, Qt::red));
+    connect(ui->speakersListAdd, &QPushButton::clicked, this, &DialogView::onSpeakersListAddClicked);
+    connect(ui->speakersListDel, &QPushButton::clicked, this, &DialogView::onSpeakersListDelClicked);
+    connect(ui->speakersTable, &QTableWidget::cellChanged, this, &DialogView::onSpeakerTableCellChanged);
+
+    // DLG wide Settings
+    connect(ui->noZoom, &QCheckBox::stateChanged, this, &DialogView::onNoZoomChanged);
+    connect(ui->abortLineEdit, &QLineEdit::textChanged, this, &DialogView::onAbortScriptChanged);
+    connect(ui->endLineEdit, &QLineEdit::textChanged, this, &DialogView::onEndScriptChanged);
+
+    // Comment
+    connect(ui->commentText, &QTextEdit::textChanged, this, &DialogView::onCommentTextChanged);
+
+    // [TODO] persist these values
+    auto width = qApp->primaryScreen()->geometry().width();
+    auto height = qApp->primaryScreen()->geometry().height();
+    ui->splitter->setSizes(QList<int>() << width * 3 / 4 << width * 1 / 4);
+    ui->splitter_2->setSizes(QList<int>() << height * 3 / 4 << height * 1 / 4);
+
+
+    QStringList scripts;
+    auto get_scripts = [&scripts](const nw::Resource& res) {
+        // Note: we only care about compiled scripts (for now).
+        if (res.type != nw::ResourceType::ncs) { return; }
+        scripts << QString::fromStdString(res.resref.string());
+    };
+
+    nw::kernel::resman().visit(get_scripts);
+
+    scripts.sort(Qt::CaseInsensitive);
+    script_completer_ = new QCompleter(scripts, this);
+    ui->actionScript->setCompleter(script_completer_);
+    ui->conditionScript->setCompleter(script_completer_);
+    ui->abortLineEdit->setCompleter(script_completer_);
+    ui->endLineEdit->setCompleter(script_completer_);
+
+    QStringList sounds;
+    auto get_sounds = [&sounds](const nw::Resource& res) {
+        if (!nw::ResourceType::check_category(nw::ResourceType::sound, res.type)) { return; }
+        sounds << QString::fromStdString(res.resref.string());
+    };
+
+    nw::kernel::resman().visit(get_sounds);
+    sounds.sort(Qt::CaseInsensitive);
+    sound_completer_ = new QCompleter(sounds, this);
+    ui->actionSound->setCompleter(sound_completer_);
+}
+
+DialogView::~DialogView()
+{
+    delete ui;
+}
+
+void DialogView::loadItem(DialogItem* item)
+{
+    current_item_ = nullptr;
+
+    // Action Script
+    ui->actionScript->setText(QString::fromStdString(item->ptr_ ? item->ptr_->node->script_action.string() : ""));
+    ui->actionScript->setDisabled(!item->ptr_ || item->ptr_->is_link);
+
+    // Actions Param Table
+    ui->actionParams->clearContents();
+    ui->actionParams->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    if (item->ptr_) {
+        ui->actionParams->setRowCount(int(item->ptr_->node->action_params.size()));
+        ui->actionParams->setColumnCount(2);
+        for (size_t r = 0; r < item->ptr_->node->action_params.size(); ++r) {
+            ui->actionParams->setItem(int(r), 0, new QTableWidgetItem(QString::fromStdString(item->ptr_->node->action_params[r].first)));
+            ui->actionParams->setItem(int(r), 1, new QTableWidgetItem(QString::fromStdString(item->ptr_->node->action_params[r].second)));
+        }
+    }
+    ui->actionParams->setDisabled(!item->ptr_ || item->ptr_->is_link);
+
+    // Action Sound
+    ui->actionSound->setText(item->ptr_ ? QString::fromStdString(item->ptr_->node->sound.string()) : "");
+    ui->actionSound->setDisabled(!item->ptr_ || item->ptr_->is_link);
+
+    // Action Animation
+    ui->actionAnimation->setDisabled(!item->ptr_ || item->ptr_->is_link);
+
+    // Condition script
+    ui->conditionScript->setText(QString::fromStdString(item->ptr_ ? item->ptr_->script_appears.string() : ""));
+    ui->conditionScript->setDisabled(!item->ptr_ || item->ptr_->is_link);
+
+    // Condition Param Table
+    ui->conditionParams->clearContents();
+    ui->conditionParams->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    if (item->ptr_) {
+        ui->conditionParams->setRowCount(int(item->ptr_->condition_params.size()));
+        ui->conditionParams->setColumnCount(2);
+        for (size_t r = 0; r < item->ptr_->condition_params.size(); ++r) {
+            ui->conditionParams->setItem(int(r), 0, new QTableWidgetItem(QString::fromStdString(item->ptr_->condition_params[r].first)));
+            ui->conditionParams->setItem(int(r), 1, new QTableWidgetItem(QString::fromStdString(item->ptr_->condition_params[r].second)));
+        }
+    }
+    ui->conditionParams->setDisabled(!item->ptr_ || item->ptr_->is_link);
+
+    // Dialog Text
+    ui->dialogTextEdit->setCurrentFont(font_);
+    ui->dialogTextEdit->setText(item->ptr_ ? QString::fromStdString(item->ptr_->node->text.get(lang_, feminine_)) : "");
+    ui->dialogTextEdit->setDisabled(!item->ptr_ || item->ptr_->is_link);
+
+    // Exit Scripts
+    ui->abortLineEdit->setText(QString::fromStdString(item->ptr_ ? item->ptr_->parent->script_abort.string() : ""));
+    ui->endLineEdit->setText(QString::fromStdString(item->ptr_ ? item->ptr_->parent->script_end.string() : ""));
+
+    // Speaker Table
+    if (!item->ptr_ || !item->ptr_->is_link) {
+        ui->speakersTable->setDisabled(!item->ptr_ || item->ptr_->type == nw::DialogNodeType::reply);
+    }
+
+    if (item->ptr_) {
+        int select_speaker = 0;
+        if (!item->ptr_->node->speaker.empty()) {
+            for (int i = 0; i < ui->speakersTable->rowCount(); ++i) {
+                auto twi = ui->speakersTable->item(i, 0);
+                auto twi_data = twi->data(Qt::DisplayRole);
+                if (!twi_data.isNull() && item->ptr_->node->speaker == twi_data.toString().toStdString()) {
+                    select_speaker = i;
+                }
+            }
+        }
+        ui->speakersTable->setCurrentCell(select_speaker, 0);
+    }
+
+    // Comment
+    ui->commentText->setCurrentFont(font_);
+    if (!item->ptr_) {
+        ui->commentText->setText("");
+    }
+    else if (item->ptr_->is_link) {
+        ui->commentText->setText(QString::fromStdString(item->ptr_->comment));
+    } else {
+        ui->commentText->setText(QString::fromStdString(item->ptr_->node->comment));
+    }
+    ui->commentText->setDisabled(!item->ptr_);
+
+    current_item_ = item;
+}
+
+void DialogView::selectFirst()
+{
+    auto index = model_->index(0, 0);
+    ui->dialogView->expandRecursively(index);
+    ui->dialogView->selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+
+    auto new_ptr = reinterpret_cast<DialogItem*>(index.internalPointer());
+    if (!new_ptr || new_ptr == current_item_) { return; }
+    loadItem(new_ptr);
+}
+
+void DialogView::setColors(QColor entry, QColor reply, QColor link)
+{
+    model_->setColors(entry, reply, link);
+}
+
+void DialogView::setFont(const QFont& font)
+{
+    font_ = font;
+    ui->dialogTextEdit->setFont(font_);
+    model_->setFont(font_);
+}
+
+void DialogView::setModel(DialogModel* model)
+{
+    model_ = model;
+    ui->dialogView->setModel(model);
+    connect(ui->dialogView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &DialogView::onSelectionChanged);
+}
+
+// Slots
+
+void DialogView::onAbortScriptChanged(const QString& value)
+{
+    if (!current_item_) { return; }
+    current_item_->ptr_->parent->script_abort = nw::Resref{value.toStdString()};
+}
+
+void DialogView::onActionParamAddClicked()
+{
+    if (!ui->actionParams->isEnabled()) { return; }
+
+    ui->actionParams->insertRow(ui->actionParams->rowCount());
+    ui->actionParams->setFocus();
+    ui->actionParams->setCurrentCell(ui->actionParams->rowCount() - 1, 0);
+    auto item = ui->actionParams->item(ui->actionParams->rowCount() - 1, 0);
+    ui->actionParams->editItem(item);
+}
+
+void DialogView::onActionParamCellChanged(int row, int col)
+{
+    if (!current_item_) { return; }
+    if (size_t(row) >= current_item_->ptr_->node->action_params.size()) {
+        current_item_->ptr_->node->action_params.resize(row + 1);
+    }
+    auto variant = ui->actionParams->item(row, col)->data(Qt::DisplayRole);
+    if (variant.isNull()) { return; }
+
+    auto value = variant.toString().toStdString();
+
+    if (col == 0) {
+        current_item_->ptr_->node->action_params[row].first = value;
+    } else if (col == 1) {
+        current_item_->ptr_->node->action_params[row].second = value;
+    }
+}
+
+void DialogView::onActionParamDelClicked()
+{
+    if (!ui->actionParams->isEnabled()) { return; }
+
+    QModelIndexList selection = ui->actionParams->selectionModel()->selectedRows();
+
+    for (int i = 0; i < selection.count(); i++) {
+        ui->actionParams->removeRow(selection[i].row());
+    }
+}
+
+void DialogView::onActionSoundChanged(const QString& value)
+{
+    if (!current_item_) { return; }
+    current_item_->ptr_->node->sound = nw::Resref{value.toStdString()};
+}
+
+void DialogView::onActionScriptChanged(const QString& value)
+{
+    if (!current_item_) { return; }
+    current_item_->ptr_->node->script_action = nw::Resref{value.toStdString()};
+}
+
+void DialogView::onCommentTextChanged()
+{
+    if (!current_item_) { return; }
+    if (current_item_->ptr_->is_link) {
+        current_item_->ptr_->comment = ui->commentText->toPlainText().toStdString();
+    } else {
+        current_item_->ptr_->node->comment = ui->commentText->toPlainText().toStdString();
+    }
+}
+
+void DialogView::onConditionParamAddClicked()
+{
+    if (!ui->conditionParams->isEnabled()) { return; }
+
+    ui->conditionParams->insertRow(ui->conditionParams->rowCount());
+    ui->conditionParams->setFocus();
+    ui->conditionParams->setCurrentCell(ui->conditionParams->rowCount() - 1, 0);
+    auto item = ui->conditionParams->item(ui->conditionParams->rowCount() - 1, 0);
+    ui->conditionParams->editItem(item);
+}
+
+void DialogView::onConditionParamCellChanged(int row, int col)
+{
+    if (!current_item_) { return; }
+    if (size_t(row) >= current_item_->ptr_->condition_params.size()) {
+        current_item_->ptr_->condition_params.resize(row + 1);
+    }
+    auto variant = ui->conditionParams->item(row, col)->data(Qt::DisplayRole);
+    if (variant.isNull()) { return; }
+
+    auto value = variant.toString().toStdString();
+
+    if (col == 0) {
+        current_item_->ptr_->condition_params[row].first = value;
+    } else if (col == 1) {
+        current_item_->ptr_->condition_params[row].second = value;
+    }
+}
+
+void DialogView::onConditionParamDelClicked()
+{
+    if (!ui->conditionParams->isEnabled()) { return; }
+
+    QModelIndexList selection = ui->conditionParams->selectionModel()->selectedRows();
+
+    for (int i = 0; i < selection.count(); i++) {
+        ui->conditionParams->removeRow(selection[i].row());
+    }
+}
+
+void DialogView::onConditionScriptChanged(const QString& value)
+{
+    if (!current_item_) { return; }
+    current_item_->ptr_->script_appears = nw::Resref{value.toStdString()};
+}
+
+void DialogView::onCustomContextMenu(const QPoint& point)
+{
+    context_index_ = ui->dialogView->indexAt(point);
+    if (!context_index_.isValid()) { return; }
+
+    context_menu_->exec(ui->dialogView->viewport()->mapToGlobal(point));
+}
+
+void DialogView::onDialogAddNode()
+{
+    QModelIndexList selection = ui->dialogView->selectionModel()->selectedRows();
+    if (selection.empty()) { return; }
+    auto index = selection[0];
+    if (!index.isValid()) { return; }
+
+    if (!index.isValid()) { return; }
+
+    auto item = reinterpret_cast<DialogItem*>(index.internalPointer());
+    nw::DialogPtr* ptr;
+
+    if (!item->parent_) {
+        ptr = model_->dialog()->add();
+    } else {
+        ptr = item->ptr_->add();
+    }
+    DialogItem* new_item = new DialogItem(ptr, item->children_.size(), model_, item);
+    model_->addRow(new_item, index);
+    QModelIndex new_index = model_->index(item->children_.size() - 1, 0, index);
+    ui->dialogView->setCurrentIndex(new_index);
+    loadItem(new_item);
+    ui->dialogTextEdit->setFocus();
+    ui->dialogTextEdit->setCurrentFont(font_);
+    ui->dialogTextEdit->setText("<< Enter text here >>");
+    ui->dialogTextEdit->selectAll();
+}
+
+void DialogView::onDialogCopyNode()
+{
+    if (last_copy_or_cut_ && last_edit_was_cut_) {
+        model_->dialog()->delete_ptr(last_copy_or_cut_);
+    }
+    last_copy_or_cut_ = nullptr;
+
+    QModelIndexList selection = ui->dialogView->selectionModel()->selectedRows();
+    if (selection.empty()) { return; }
+    auto index = selection[0];
+    if (!index.isValid()) { return; }
+
+    auto item = reinterpret_cast<DialogItem*>(index.internalPointer());
+    last_edit_was_cut_ = false;
+    last_copy_or_cut_ = item->ptr_;
+}
+
+void DialogView::onDialogCutNode()
+{
+    if (last_copy_or_cut_ && last_edit_was_cut_) {
+        model_->dialog()->delete_ptr(last_copy_or_cut_);
+    }
+    last_copy_or_cut_ = nullptr;
+
+    QModelIndexList selection = ui->dialogView->selectionModel()->selectedRows();
+    if (selection.empty()) { return; }
+    auto index = selection[0];
+    if (!index.isValid()) { return; }
+
+    auto item = reinterpret_cast<DialogItem*>(index.internalPointer());
+    auto parent_item = reinterpret_cast<DialogItem*>(item->parent_);
+    model_->deleteRow(item, index.parent());
+    model_->deleteAllMatchingRows([item](AbstractTreeItem* cursor) {
+        auto check = reinterpret_cast<DialogItem*>(cursor);
+        return check->ptr_->is_link && check->ptr_->node == item->ptr_->node;
+    });
+
+    if (!parent_item->ptr_) {
+        model_->dialog()->remove_ptr(item->ptr_);
+    } else {
+        parent_item->ptr_->remove_ptr(item->ptr_);
+    }
+
+    last_copy_or_cut_ = item->ptr_;
+    last_edit_was_cut_ = true;
+    delete item;
+}
+
+void DialogView::onDialogDeleteNode()
+{
+    QModelIndexList selection = ui->dialogView->selectionModel()->selectedRows();
+    if (selection.empty()) { return; }
+    auto index = selection[0];
+    if (!index.isValid()) { return; }
+
+    auto item = reinterpret_cast<DialogItem*>(index.internalPointer());
+    auto parent_item = reinterpret_cast<DialogItem*>(item->parent_);
+    if (!parent_item) { return; } // The root
+
+    model_->deleteRow(item, index.parent());
+    model_->deleteAllMatchingRows([item](AbstractTreeItem* cursor) {
+        auto check = reinterpret_cast<DialogItem*>(cursor);
+        return check->ptr_->is_link && check->ptr_->node == item->ptr_->node;
+    });
+
+    if (!parent_item->ptr_) {
+        model_->dialog()->remove_ptr(item->ptr_);
+    } else {
+        parent_item->ptr_->remove_ptr(item->ptr_);
+    }
+
+    model_->dialog()->delete_ptr(item->ptr_);
+    delete item;
+}
+
+void DialogView::onDialogPasteNode()
+{
+    if (!last_copy_or_cut_) { return; }
+
+    QModelIndexList selection = ui->dialogView->selectionModel()->selectedRows();
+    if (selection.empty()) { return; }
+    auto index = selection[0];
+    if (!index.isValid()) { return; }
+
+    auto item = reinterpret_cast<DialogItem*>(index.internalPointer());
+    if (item->ptr_->type == last_copy_or_cut_->type) { return; }
+
+    nw::DialogPtr* ptr;
+
+    if (!item->parent_) {
+        auto temp = last_edit_was_cut_ ? last_copy_or_cut_ : last_copy_or_cut_->copy();
+        ptr = model_->dialog()->add_ptr(temp);
+    } else {
+        auto temp = last_edit_was_cut_ ? last_copy_or_cut_ : last_copy_or_cut_->copy();
+        ptr = item->ptr_->add_ptr(temp);
+    }
+
+    if (last_edit_was_cut_) {
+        last_copy_or_cut_ = nullptr;
+    }
+
+    DialogItem* new_item = new DialogItem(ptr, item->children_.size(), model_, item);
+    model_->addRow(new_item, index);
+    QModelIndex new_index = model_->index(item->children_.size() - 1, 0, index);
+    ui->dialogView->setCurrentIndex(new_index);
+    loadItem(new_item);
+    ui->dialogTextEdit->setFocus();
+}
+
+void DialogView::onDialogPasteLinkNode()
+{
+    if (!last_copy_or_cut_ || last_edit_was_cut_) { return; }
+    QModelIndexList selection = ui->dialogView->selectionModel()->selectedRows();
+    if (selection.empty()) { return; }
+    auto index = selection[0];
+    if (!index.isValid()) { return; }
+
+    auto item = reinterpret_cast<DialogItem*>(index.internalPointer());
+    if (item->ptr_->type == last_copy_or_cut_->type) { return; }
+    nw::DialogPtr* ptr;
+
+    if (!item->parent_) {
+        ptr = model_->dialog()->add_ptr(last_copy_or_cut_, true);
+    } else {
+        ptr = item->ptr_->add_ptr(last_copy_or_cut_, true);
+    }
+    last_copy_or_cut_ = nullptr;
+
+    DialogItem* new_item = new DialogItem(ptr, item->children_.size(), model_, item);
+    model_->addRow(new_item, index);
+    QModelIndex new_index = model_->index(item->children_.size() - 1, 0, index);
+    ui->dialogView->setCurrentIndex(new_index);
+    loadItem(new_item);
+    ui->dialogTextEdit->setFocus();
+}
+
+void DialogView::onDialogSave()
+{
+    QFileInfo fileInfo(path_);
+    auto ext = fileInfo.completeSuffix();
+    if (0 == ext.compare("dlg", Qt::CaseInsensitive)) {
+        nw::GffBuilder oa = nw::serialize(model_->dialog());
+        oa.write_to(path_.toStdString());
+    } else if (0 == ext.compare("dlg.json", Qt::CaseInsensitive)) {
+        nlohmann::json j;
+        nw::serialize(j, *model_->dialog());
+        std::ofstream f{path_.toStdString()};
+        f << std::setw(4) << j;
+    }
+}
+
+void DialogView::onDialogSaveAs()
+{
+    auto fn = QFileDialog::getSaveFileName(this, "Save As..", path_, "Dlg (*.dlg *.dlg.json)");
+    if (fn.isEmpty()) { return; }
+    path_ = fn;
+
+    QFileInfo fileInfo(path_);
+    auto ext = fileInfo.completeSuffix();
+    if (0 == ext.compare("dlg", Qt::CaseInsensitive)) {
+        nw::GffBuilder oa = nw::serialize(model_->dialog());
+        oa.write_to(path_.toStdString());
+    } else if (0 == ext.compare("dlg.json", Qt::CaseInsensitive)) {
+        nlohmann::json j;
+        nw::serialize(j, *model_->dialog());
+        std::ofstream f{path_.toStdString()};
+        f << std::setw(4) << j;
+    }
+}
+
+void DialogView::onDialogTextChanged()
+{
+    if (!current_item_) { return; }
+    auto index = ui->dialogView->currentIndex();
+    if (!index.isValid()) { return; }
+    auto item = reinterpret_cast<DialogItem*>(index.internalPointer());
+    item->ptr_->node->text.add(lang_, ui->dialogTextEdit->toPlainText().toStdString(), feminine_);
+    emit model_->dataChanged(index, index);
+}
+
+void DialogView::onEndScriptChanged(const QString& value)
+{
+    if (!current_item_) { return; }
+    current_item_->ptr_->parent->script_end = nw::Resref{value.toStdString()};
+}
+
+void DialogView::onLanguageChanged(nw::LanguageID lang, bool feminine)
+{
+    lang_ = lang;
+    feminine_ = feminine;
+    ui->dialogView->setFocus(); // Need to set focus or model will not update until focus is taken.
+    model_->setLanguage(lang, feminine);
+}
+
+void DialogView::onNoZoomChanged(int state)
+{
+    model_->dialog()->prevent_zoom = !!state;
+}
+
+void DialogView::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+{
+    Q_UNUSED(deselected);
+    auto indices = selected.indexes();
+    if (indices.empty()) { return; }
+    auto new_ptr = reinterpret_cast<DialogItem*>(indices[0].internalPointer());
+    if (!new_ptr || new_ptr == current_item_) { return; }
+    loadItem(new_ptr);
+}
+
+void DialogView::onSpeakersListAddClicked()
+{
+    if (!ui->speakersTable->isEnabled()) { return; }
+
+    ui->speakersTable->insertRow(ui->speakersTable->rowCount());
+    ui->speakersTable->setFocus();
+    ui->speakersTable->setCurrentCell(ui->speakersTable->rowCount() - 1, 0);
+    auto item = ui->speakersTable->item(ui->speakersTable->rowCount() - 1, 0);
+    ui->speakersTable->editItem(item);
+}
+
+void DialogView::onSpeakerTableCellChanged(int row, int col)
+{
+    if (!current_item_) { return; }
+
+    auto item = ui->speakersTable->item(row, col);
+    if (row == 0) {
+        item->setData(Qt::DisplayRole, "<owner>");
+    } else {
+        auto variant = item->data(Qt::DisplayRole);
+        if (!variant.isNull()) {
+            current_item_->ptr_->node->speaker = variant.toString().toStdString();
+        }
+    }
+}
+
+void DialogView::onSpeakersListDelClicked()
+{
+    if (!ui->speakersTable->isEnabled()) { return; }
+
+    QModelIndexList selection = ui->speakersTable->selectionModel()->selectedRows();
+    for (int i = 0; i < selection.count(); i++) {
+        if (selection[i].row() == 0) { continue; }
+        ui->speakersTable->removeRow(selection[i].row());
+    }
+}

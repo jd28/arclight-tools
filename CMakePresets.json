@@ -45,6 +45,15 @@
             }
         },
         {
+            "name": "windows-debug",
+            "inherits": "windows",
+            "generator": "Visual Studio 16 2019",
+            "binaryDir": "${sourceDir}/build-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
             "name": "macos",
             "inherits": "default",
             "displayName": "Default Config for macOS",
@@ -57,6 +66,10 @@
         {
             "name": "default",
             "configurePreset": "default"
+        },
+        {
+            "name": "windows-debug",
+            "configurePreset": "windows-debug"
         }
     ],
     "testPresets": [
