@@ -75,7 +75,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::open(const QString& path)
 {
-    if (!QFileInfo(path).exists()) { return; }
+    if (!QFileInfo::exists(path)) { return; }
     std::string p = path.toStdString();
     for (int i = 0; i < ui_->containerTabWidget->count(); ++i) {
         auto cw = reinterpret_cast<ContainerWidget*>(ui_->containerTabWidget->widget(i));
