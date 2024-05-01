@@ -41,6 +41,7 @@ add_executable(dlg
 endif()
 
 target_include_directories(dlg PRIVATE
+    ./
     ../
     ${CMAKE_SOURCE_DIR}/external/rollnw/external
     ${CMAKE_SOURCE_DIR}/external/rollnw/external/sqlite-3.45.2
