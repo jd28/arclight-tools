@@ -12,6 +12,9 @@ set(SRC_FILES
     dialogview.ui
     dialogtreeview.h
     dialogtreeview.cpp
+    fontchooserdialog.h
+    fontchooserdialog.cpp
+    fontchooserdialog.ui
 
     ${CMAKE_SOURCE_DIR}/external/ZFontIcon/ZFontIcon/Fonts.qrc
 )
@@ -32,7 +35,6 @@ set_target_properties(dlg
 elseif(MSVC)
 add_executable(dlg WIN32
     ${SRC_FILES}
-    fontchooserdialog.h fontchooserdialog.cpp fontchooserdialog.ui
 )
 else()
 add_executable(dlg
