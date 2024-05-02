@@ -72,7 +72,7 @@ QModelIndex AbstractTreeModel::parent(const QModelIndex& index) const
 int AbstractTreeModel::rowCount(const QModelIndex& parent) const
 {
     if (!parent.isValid()) {
-        return root_items_.size();
+        return int(root_items_.size());
     }
 
     AbstractTreeItem* node = static_cast<AbstractTreeItem*>(parent.internalPointer());

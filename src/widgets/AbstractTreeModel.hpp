@@ -22,7 +22,7 @@ public:
     }
 
     AbstractTreeItem* child(int row) { return children_[row]; }
-    int childCount() const { return children_.size(); }
+    int childCount() const { return int(children_.size()); }
     virtual QVariant data(int column) const = 0;
     int row() const { return row_; }
     AbstractTreeItem* parent() { return parent_; }

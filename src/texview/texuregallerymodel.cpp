@@ -48,16 +48,21 @@ TexureGalleryModel::TexureGalleryModel(const QString& path, QObject* parent)
 
 QVariant TexureGalleryModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+    Q_UNUSED(section);
+    Q_UNUSED(orientation);
+    Q_UNUSED(role);
     return {};
 }
 
 int TexureGalleryModel::rowCount(const QModelIndex& parent) const
 {
-    return labels_.size();
+    Q_UNUSED(parent);
+    return int(labels_.size());
 }
 
 int TexureGalleryModel::columnCount(const QModelIndex& parent) const
 {
+    Q_UNUSED(parent);
     return 1;
 }
 

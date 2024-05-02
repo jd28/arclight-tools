@@ -399,9 +399,9 @@ void DialogView::onDialogAddNode()
     } else {
         ptr = item->ptr_->add();
     }
-    DialogItem* new_item = new DialogItem(ptr, item->children_.size(), model_, item);
+    DialogItem* new_item = new DialogItem(ptr, int(item->children_.size()), model_, item);
     model_->addRow(new_item, index);
-    QModelIndex new_index = model_->index(item->children_.size() - 1, 0, index);
+    QModelIndex new_index = model_->index(int(item->children_.size() - 1), 0, index);
     ui->dialogView->setCurrentIndex(new_index);
     loadItem(new_item);
     ui->dialogTextEdit->setFocus();
@@ -511,9 +511,9 @@ void DialogView::onDialogPasteNode()
         last_copy_or_cut_ = nullptr;
     }
 
-    DialogItem* new_item = new DialogItem(ptr, item->children_.size(), model_, item);
+    DialogItem* new_item = new DialogItem(ptr, int(item->children_.size()), model_, item);
     model_->addRow(new_item, index);
-    QModelIndex new_index = model_->index(item->children_.size() - 1, 0, index);
+    QModelIndex new_index = model_->index(int(item->children_.size() - 1), 0, index);
     ui->dialogView->setCurrentIndex(new_index);
     loadItem(new_item);
     ui->dialogTextEdit->setFocus();
@@ -538,9 +538,9 @@ void DialogView::onDialogPasteLinkNode()
     }
     last_copy_or_cut_ = nullptr;
 
-    DialogItem* new_item = new DialogItem(ptr, item->children_.size(), model_, item);
+    DialogItem* new_item = new DialogItem(ptr, int(item->children_.size()), model_, item);
     model_->addRow(new_item, index);
-    QModelIndex new_index = model_->index(item->children_.size() - 1, 0, index);
+    QModelIndex new_index = model_->index(int(item->children_.size() - 1), 0, index);
     ui->dialogView->setCurrentIndex(new_index);
     loadItem(new_item);
     ui->dialogTextEdit->setFocus();
