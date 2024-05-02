@@ -1,4 +1,5 @@
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Multimedia)
 
 set(SRC_FILES
     main.cpp
@@ -60,6 +61,7 @@ target_link_libraries(dlg PRIVATE
     arclight-external
     qtpropertybrowser
     Qt6::Widgets
+    Qt6::Multimedia
 )
 
 if(LINUX)

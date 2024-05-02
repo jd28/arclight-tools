@@ -153,7 +153,7 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
+            <y>-761</y>
             <width>400</width>
             <height>1295</height>
            </rect>
@@ -705,7 +705,7 @@
                <widget class="QLineEdit" name="actionSound"/>
               </item>
               <item row="2" column="2">
-               <widget class="QPushButton" name="playButton">
+               <widget class="QPushButton" name="actionSoundPlay">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -716,8 +716,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../../external/ZFontIcon/ZFontIcon/Fonts.qrc">
-                  <normaloff>:/fa6/FontAwesome_v6.4.2_Brands_Regular400.ttf</normaloff>:/fa6/FontAwesome_v6.4.2_Brands_Regular400.ttf</iconset>
+                 <iconset theme="media-playback-start"/>
                 </property>
                </widget>
               </item>
@@ -795,8 +794,6 @@
    <header>dialogtreeview.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../../external/ZFontIcon/ZFontIcon/Fonts.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

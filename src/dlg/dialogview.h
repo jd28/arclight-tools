@@ -8,8 +8,11 @@
 
 struct DialogItem;
 class DialogModel;
+
+class QAudioOutput;
 class QCompleter;
 class QItemSelection;
+class QMediaPlayer;
 
 namespace Ui {
 class DialogView;
@@ -39,6 +42,7 @@ public slots:
     void onActionParamAddClicked();
     void onActionParamDelClicked();
     void onActionSoundChanged(const QString& value);
+    void onActionSoundClicked();
     void onActionScriptChanged(const QString& value);
     void onCommentTextChanged();
     void onConditionParamCellChanged(int row, int col);
@@ -86,6 +90,8 @@ private:
     QAction* delete_ctx_action_ = nullptr;
     nw::LanguageID lang_ = nw::LanguageID::english;
     bool feminine_ = false;
+    QMediaPlayer* player_ = nullptr;
+    QAudioOutput* output_ = nullptr;
 };
 
 #endif // DIALOGVIEW_H

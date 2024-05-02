@@ -13,10 +13,13 @@
 #include "ZFontIcon/ZFont_fa6.h"
 
 #include <QApplication>
+#include <QAudioOutput>
+#include <QBuffer>
 #include <QColor>
 #include <QCompleter>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QMediaPlayer>
 #include <QMenu>
 #include <QPushButton>
 #include <QScreen>
@@ -52,7 +55,6 @@ DialogView::DialogView(QString path, QWidget* parent)
     connect(paste_link_ctx_action_, &QAction::triggered, this, &DialogView::onDialogPasteLinkNode);
     connect(delete_ctx_action_, &QAction::triggered, this, &DialogView::onDialogDeleteNode);
 
-    ui->playButton->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_play));
     ui->actionsButton->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_code));
     ui->languageButton->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_language));
 
@@ -68,6 +70,7 @@ DialogView::DialogView(QString path, QWidget* parent)
 
     // Action Sound
     connect(ui->actionSound, &QLineEdit::textChanged, this, &DialogView::onActionSoundChanged);
+    connect(ui->actionSoundPlay, &QPushButton::clicked, this, &DialogView::onActionSoundClicked);
 
     // Condition Script
     connect(ui->conditionScript, &QLineEdit::textChanged, this, &DialogView::onConditionScriptChanged);
@@ -310,6 +313,58 @@ void DialogView::onActionSoundChanged(const QString& value)
 {
     if (!current_item_) { return; }
     current_item_->ptr_->node->sound = nw::Resref{value.toStdString()};
+}
+
+void DialogView::onActionSoundClicked()
+{
+    nw::ResourceData rdata;
+    nw::Resref sound{ui->actionSound->text().toStdString()};
+    for (auto rt : {nw::ResourceType::wav, nw::ResourceType::bmu}) {
+        rdata = nw::kernel::resman().demand({sound, rt});
+        if (rdata.bytes.size()) { break; }
+    }
+
+    if (rdata.bytes.size() == 0) {
+        LOG_F(ERROR, "[dlg] failed to load audio file: {}", sound.view());
+        return;
+    }
+
+    if (!player_) {
+        player_ = new QMediaPlayer{this};
+        output_ = new QAudioOutput(this);
+        player_->setAudioOutput(output_);
+    }
+
+    const char* bytes = reinterpret_cast<const char*>(rdata.bytes.data());
+    auto size = qsizetype(rdata.bytes.size());
+    QUrl url;
+
+    if (rdata.name.type == nw::ResourceType::bmu) {
+        if (size < 8) {
+            LOG_F(ERROR, "[dlg] invalid bmu file");
+            return;
+        }
+        // Got to strip the BMU tag off, the rest is just mp3.
+        if (std::strncmp(bytes, "BMU V1.0", 8) == 0) {
+            bytes += 8;
+        }
+        url = QString::fromStdString(rdata.name.resref.string()) + ".mp3";
+    } else {
+        url = QString::fromStdString(rdata.name.filename());
+    }
+
+    QByteArray ba{bytes, size};
+    output_->setVolume(50);
+
+    QBuffer* buffer = new QBuffer(player_);
+    buffer->setData(ba);
+    if (!buffer->open(QIODevice::ReadOnly)) {
+        LOG_F(ERROR, "audio buffer not opened");
+    }
+
+    buffer->seek(qint64(0));
+    player_->setSourceDevice(buffer, url);
+    player_->play();
 }
 
 void DialogView::onActionScriptChanged(const QString& value)
