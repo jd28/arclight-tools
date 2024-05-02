@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -64,7 +64,7 @@ jobs:
           version: 6.6.3
 
       - name: cache ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ${{ github.workspace }}/ccache
@@ -76,7 +76,7 @@ jobs:
         run: |
           ./scripts/dist_linux.sh
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: arclight-linux-x64
           path: bin/*

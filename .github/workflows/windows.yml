@@ -24,7 +24,7 @@ jobs:
     runs-on: windows-2019
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -50,7 +50,7 @@ jobs:
           version: 6.6.3
 
       - name: cache ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ${{ github.workspace }}/ccache
@@ -61,7 +61,7 @@ jobs:
       - name: Configure & Build
         run: .\scripts\dist_win.bat
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: arclight-windows-x64
           path: bin/*
