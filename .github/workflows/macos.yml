@@ -55,6 +55,8 @@ jobs:
         uses: jurplel/install-qt-action@v3
         with:
           version: 6.6.3
+          modules: "qtmultimedia"
+          cache: true
 
       - name: cache ccache
         uses: actions/cache@v4
