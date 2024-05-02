@@ -12,4 +12,5 @@ echo "Running windeployqt..."
 cd bin/
 %Qt6_DIR%/bin/windeployqt --release erfherder.exe
 %Qt6_DIR%/bin/windeployqt --release texview.exe
+%Qt6_DIR%/bin/windeployqt --release dlg.exe
 cd ..
