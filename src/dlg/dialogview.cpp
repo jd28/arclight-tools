@@ -60,6 +60,7 @@ DialogView::DialogView(QString path, QWidget* parent)
 
     // Action Script
     connect(ui->actionScript, &QLineEdit::textChanged, this, &DialogView::onActionScriptChanged);
+    connect(ui->actionAnimation, &QComboBox::currentIndexChanged, this, &DialogView::onActionAnimationChanged);
 
     // Action Param
     connect(ui->actionParams, &QTableWidget::cellChanged, this, &DialogView::onActionParamCellChanged);
@@ -170,6 +171,70 @@ void DialogView::loadItem(DialogItem* item)
 
     // Action Animation
     ui->actionAnimation->setDisabled(!item->ptr_ || item->ptr_->is_link);
+    if (item->ptr_) {
+        switch (item->ptr_->node->animation) {
+        default:
+            break;
+        case nw::DialogAnimation::default_:
+            ui->actionAnimation->setCurrentIndex(0);
+            break;
+        case nw::DialogAnimation::none:
+            ui->actionAnimation->setCurrentIndex(1);
+            break;
+        case nw::DialogAnimation::taunt:
+            ui->actionAnimation->setCurrentIndex(2);
+            break;
+        case nw::DialogAnimation::greeting:
+            ui->actionAnimation->setCurrentIndex(3);
+            break;
+        case nw::DialogAnimation::listen:
+            ui->actionAnimation->setCurrentIndex(4);
+            break;
+        case nw::DialogAnimation::worship:
+            ui->actionAnimation->setCurrentIndex(5);
+            break;
+        case nw::DialogAnimation::salute:
+            ui->actionAnimation->setCurrentIndex(6);
+            break;
+        case nw::DialogAnimation::bow:
+            ui->actionAnimation->setCurrentIndex(7);
+            break;
+        case nw::DialogAnimation::steal:
+            ui->actionAnimation->setCurrentIndex(8);
+            break;
+        case nw::DialogAnimation::talk_normal:
+            ui->actionAnimation->setCurrentIndex(9);
+            break;
+        case nw::DialogAnimation::talk_pleading:
+            ui->actionAnimation->setCurrentIndex(10);
+            break;
+        case nw::DialogAnimation::talk_forceful:
+            ui->actionAnimation->setCurrentIndex(11);
+            break;
+        case nw::DialogAnimation::talk_laugh:
+            ui->actionAnimation->setCurrentIndex(12);
+            break;
+        case nw::DialogAnimation::victory_1:
+            ui->actionAnimation->setCurrentIndex(13);
+            break;
+        case nw::DialogAnimation::victory_2:
+            ui->actionAnimation->setCurrentIndex(14);
+            break;
+        case nw::DialogAnimation::victory_3:
+            ui->actionAnimation->setCurrentIndex(15);
+            break;
+
+        case nw::DialogAnimation::look_far:
+            ui->actionAnimation->setCurrentIndex(16);
+            break;
+        case nw::DialogAnimation::drink:
+            ui->actionAnimation->setCurrentIndex(17);
+            break;
+        case nw::DialogAnimation::read:
+            ui->actionAnimation->setCurrentIndex(18);
+            break;
+        }
+    }
 
     // Condition script
     ui->conditionScript->setText(QString::fromStdString(item->ptr_ ? item->ptr_->script_appears.string() : ""));
@@ -267,6 +332,72 @@ void DialogView::onAbortScriptChanged(const QString& value)
 {
     if (!current_item_) { return; }
     current_item_->ptr_->parent->script_abort = nw::Resref{value.toStdString()};
+}
+
+void DialogView::onActionAnimationChanged(int index)
+{
+    if (!current_item_) { return; }
+    switch (index) {
+    default:
+        return;
+    case 0:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::default_;
+        break;
+    case 1:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::none;
+        break;
+    case 2:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::taunt;
+        break;
+    case 3:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::greeting;
+        break;
+    case 4:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::listen;
+        break;
+    case 5:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::worship;
+        break;
+    case 6:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::salute;
+        break;
+    case 7:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::bow;
+        break;
+    case 8:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::steal;
+        break;
+    case 9:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::talk_normal;
+        break;
+    case 10:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::talk_pleading;
+        break;
+    case 11:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::talk_forceful;
+        break;
+    case 12:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::talk_laugh;
+        break;
+    case 13:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::victory_1;
+        break;
+    case 14:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::victory_2;
+        break;
+    case 15:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::victory_3;
+        break;
+    case 16:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::look_far;
+        break;
+    case 17:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::drink;
+        break;
+    case 18:
+        current_item_->ptr_->node->animation = nw::DialogAnimation::read;
+        break;
+    }
 }
 
 void DialogView::onActionParamAddClicked()

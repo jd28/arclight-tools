@@ -38,6 +38,7 @@ public:
 
 public slots:
     void onAbortScriptChanged(const QString& value);
+    void onActionAnimationChanged(int index);
     void onActionParamCellChanged(int row, int col);
     void onActionParamAddClicked();
     void onActionParamDelClicked();

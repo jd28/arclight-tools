@@ -40,7 +40,6 @@ An editor for DLG conversation files and rollnw DLG json files.  A project of th
 
 * Since it exists outside of a module.. completion on module scripts and journal integration.
 * Inserting action strings (and corresponding highlights)
-* Setting animations.
 * Loading a TLK file and handling dialog nodes with string references.
 
 ![dlg](screenshots/dlg-2024-05-01.gif)
