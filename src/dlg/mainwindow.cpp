@@ -421,6 +421,11 @@ void MainWindow::onDialogDataChanged(bool changed)
 void MainWindow::onTabCloseRequested(int index)
 {
     auto cw = reinterpret_cast<DialogView*>(ui->dialogTabWidget->widget(index));
+    if (cw->modified()) {
+        if (QMessageBox::No == QMessageBox::warning(this, "You have unsaved changes!", QString("Are you sure you want to close %1?").arg(cw->name()), QMessageBox::Yes | QMessageBox::No)) {
+            return;
+        }
+    }
     ui->dialogTabWidget->removeTab(index);
     delete cw;
     // if (!current()) {
