@@ -77,6 +77,11 @@ MainWindow::~MainWindow()
 
 // Methods
 
+DialogView* MainWindow::current()
+{
+    return reinterpret_cast<DialogView*>(ui->dialogTabWidget->currentWidget());
+}
+
 void MainWindow::open(const QString& path)
 {
     if (!QFileInfo::exists(path)) { return; }
@@ -135,6 +140,8 @@ void MainWindow::open(const QString& path)
     auto model = new DialogModel(dlg, tv);
     model->loadRootItems();
     connect(this, &MainWindow::languageChanged, tv, &DialogView::onLanguageChanged);
+    connect(tv, &DialogView::dataChanged, this, &MainWindow::onDialogDataChanged);
+
     tv->setModel(model);
     tv->onLanguageChanged(lang_, feminine_);
     tv->setColors(entry_color_, reply_color_, link_color_);
@@ -184,6 +191,17 @@ void MainWindow::restoreWindow()
     auto geom = settings.value("Window/geometry");
     if (!geom.isNull()) {
         restoreGeometry(geom.toByteArray());
+    }
+}
+
+void MainWindow::setModifiedTabName(bool modified)
+{
+    if (!current()) { return; }
+    auto name = current()->name();
+    if (modified) {
+        ui->dialogTabWidget->setTabText(ui->dialogTabWidget->currentIndex(), name.isEmpty() ? "untitled*" : name + "*");
+    } else {
+        ui->dialogTabWidget->setTabText(ui->dialogTabWidget->currentIndex(), name);
     }
 }
 
@@ -393,6 +411,11 @@ void MainWindow::onActionSaveAs()
 
     QFileInfo fileInfo(tab->path());
     ui->dialogTabWidget->setTabText(index, fileInfo.fileName());
+}
+
+void MainWindow::onDialogDataChanged(bool changed)
+{
+    setModifiedTabName(changed);
 }
 
 void MainWindow::onTabCloseRequested(int index)

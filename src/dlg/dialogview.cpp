@@ -296,6 +296,17 @@ void DialogView::loadItem(DialogItem* item)
     current_item_ = item;
 }
 
+bool DialogView::modified() const
+{
+    return modified_;
+}
+
+QString DialogView::name() const
+{
+    QFileInfo fileInfo{path_};
+    return fileInfo.fileName();
+}
+
 void DialogView::selectFirst()
 {
     auto index = model_->index(0, 0);
@@ -326,12 +337,19 @@ void DialogView::setModel(DialogModel* model)
     connect(ui->dialogView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &DialogView::onSelectionChanged);
 }
 
+void DialogView::setModified(bool modified)
+{
+    modified_ = modified;
+    emit dataChanged(modified);
+}
+
 // Slots
 
 void DialogView::onAbortScriptChanged(const QString& value)
 {
     if (!current_item_) { return; }
     current_item_->ptr_->parent->script_abort = nw::Resref{value.toStdString()};
+    setModified(true);
 }
 
 void DialogView::onActionAnimationChanged(int index)
@@ -398,6 +416,7 @@ void DialogView::onActionAnimationChanged(int index)
         current_item_->ptr_->node->animation = nw::DialogAnimation::read;
         break;
     }
+    setModified(true);
 }
 
 void DialogView::onActionParamAddClicked()
@@ -409,6 +428,7 @@ void DialogView::onActionParamAddClicked()
     ui->actionParams->setCurrentCell(ui->actionParams->rowCount() - 1, 0);
     auto item = ui->actionParams->item(ui->actionParams->rowCount() - 1, 0);
     ui->actionParams->editItem(item);
+    setModified(true);
 }
 
 void DialogView::onActionParamCellChanged(int row, int col)
@@ -427,6 +447,7 @@ void DialogView::onActionParamCellChanged(int row, int col)
     } else if (col == 1) {
         current_item_->ptr_->node->action_params[row].second = value;
     }
+    setModified(true);
 }
 
 void DialogView::onActionParamDelClicked()
@@ -438,12 +459,14 @@ void DialogView::onActionParamDelClicked()
     for (int i = 0; i < selection.count(); i++) {
         ui->actionParams->removeRow(selection[i].row());
     }
+    setModified(true);
 }
 
 void DialogView::onActionSoundChanged(const QString& value)
 {
     if (!current_item_) { return; }
     current_item_->ptr_->node->sound = nw::Resref{value.toStdString()};
+    setModified(true);
 }
 
 void DialogView::onActionSoundClicked()
@@ -502,6 +525,7 @@ void DialogView::onActionScriptChanged(const QString& value)
 {
     if (!current_item_) { return; }
     current_item_->ptr_->node->script_action = nw::Resref{value.toStdString()};
+    setModified(true);
 }
 
 void DialogView::onCommentTextChanged()
@@ -512,6 +536,7 @@ void DialogView::onCommentTextChanged()
     } else {
         current_item_->ptr_->node->comment = ui->commentText->toPlainText().toStdString();
     }
+    setModified(true);
 }
 
 void DialogView::onConditionParamAddClicked()
@@ -541,6 +566,7 @@ void DialogView::onConditionParamCellChanged(int row, int col)
     } else if (col == 1) {
         current_item_->ptr_->condition_params[row].second = value;
     }
+    setModified(true);
 }
 
 void DialogView::onConditionParamDelClicked()
@@ -552,12 +578,16 @@ void DialogView::onConditionParamDelClicked()
     for (int i = 0; i < selection.count(); i++) {
         ui->conditionParams->removeRow(selection[i].row());
     }
+    if (selection.count() > 0) {
+        setModified(true);
+    }
 }
 
 void DialogView::onConditionScriptChanged(const QString& value)
 {
     if (!current_item_) { return; }
     current_item_->ptr_->script_appears = nw::Resref{value.toStdString()};
+    setModified(true);
 }
 
 void DialogView::onCustomContextMenu(const QPoint& point)
@@ -594,6 +624,7 @@ void DialogView::onDialogAddNode()
     ui->dialogTextEdit->setCurrentFont(font_);
     ui->dialogTextEdit->setText("<< Enter text here >>");
     ui->dialogTextEdit->selectAll();
+    setModified(true);
 }
 
 void DialogView::onDialogCopyNode()
@@ -642,6 +673,7 @@ void DialogView::onDialogCutNode()
     last_copy_or_cut_ = item->ptr_;
     last_edit_was_cut_ = true;
     delete item;
+    setModified(true);
 }
 
 void DialogView::onDialogDeleteNode()
@@ -669,6 +701,7 @@ void DialogView::onDialogDeleteNode()
 
     model_->dialog()->delete_ptr(item->ptr_);
     delete item;
+    setModified(true);
 }
 
 void DialogView::onDialogPasteNode()
@@ -703,6 +736,7 @@ void DialogView::onDialogPasteNode()
     ui->dialogView->setCurrentIndex(new_index);
     loadItem(new_item);
     ui->dialogTextEdit->setFocus();
+    setModified(true);
 }
 
 void DialogView::onDialogPasteLinkNode()
@@ -730,6 +764,7 @@ void DialogView::onDialogPasteLinkNode()
     ui->dialogView->setCurrentIndex(new_index);
     loadItem(new_item);
     ui->dialogTextEdit->setFocus();
+    setModified(true);
 }
 
 void DialogView::onDialogSave()
@@ -739,11 +774,13 @@ void DialogView::onDialogSave()
     if (0 == ext.compare("dlg", Qt::CaseInsensitive)) {
         nw::GffBuilder oa = nw::serialize(model_->dialog());
         oa.write_to(path_.toStdString());
+        setModified(false);
     } else if (0 == ext.compare("dlg.json", Qt::CaseInsensitive)) {
         nlohmann::json j;
         nw::serialize(j, *model_->dialog());
         std::ofstream f{path_.toStdString()};
         f << std::setw(4) << j;
+        setModified(false);
     }
 }
 
@@ -758,11 +795,13 @@ void DialogView::onDialogSaveAs()
     if (0 == ext.compare("dlg", Qt::CaseInsensitive)) {
         nw::GffBuilder oa = nw::serialize(model_->dialog());
         oa.write_to(path_.toStdString());
+        setModified(false);
     } else if (0 == ext.compare("dlg.json", Qt::CaseInsensitive)) {
         nlohmann::json j;
         nw::serialize(j, *model_->dialog());
         std::ofstream f{path_.toStdString()};
         f << std::setw(4) << j;
+        setModified(false);
     }
 }
 
@@ -774,12 +813,14 @@ void DialogView::onDialogTextChanged()
     auto item = reinterpret_cast<DialogItem*>(index.internalPointer());
     item->ptr_->node->text.add(lang_, ui->dialogTextEdit->toPlainText().toStdString(), feminine_);
     emit model_->dataChanged(index, index);
+    setModified(true);
 }
 
 void DialogView::onEndScriptChanged(const QString& value)
 {
     if (!current_item_) { return; }
     current_item_->ptr_->parent->script_end = nw::Resref{value.toStdString()};
+    setModified(true);
 }
 
 void DialogView::onLanguageChanged(nw::LanguageID lang, bool feminine)
@@ -793,6 +834,7 @@ void DialogView::onLanguageChanged(nw::LanguageID lang, bool feminine)
 void DialogView::onNoZoomChanged(int state)
 {
     model_->dialog()->prevent_zoom = !!state;
+    setModified(true);
 }
 
 void DialogView::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
@@ -814,6 +856,7 @@ void DialogView::onSpeakersListAddClicked()
     ui->speakersTable->setCurrentCell(ui->speakersTable->rowCount() - 1, 0);
     auto item = ui->speakersTable->item(ui->speakersTable->rowCount() - 1, 0);
     ui->speakersTable->editItem(item);
+    setModified(true);
 }
 
 void DialogView::onSpeakerTableCellChanged(int row, int col)
@@ -827,6 +870,7 @@ void DialogView::onSpeakerTableCellChanged(int row, int col)
         auto variant = item->data(Qt::DisplayRole);
         if (!variant.isNull()) {
             current_item_->ptr_->node->speaker = variant.toString().toStdString();
+            setModified(true);
         }
     }
 }
@@ -839,5 +883,6 @@ void DialogView::onSpeakersListDelClicked()
     for (int i = 0; i < selection.count(); i++) {
         if (selection[i].row() == 0) { continue; }
         ui->speakersTable->removeRow(selection[i].row());
+        setModified(true);
     }
 }

@@ -6,6 +6,7 @@
 #include <QMainWindow>
 
 class FontChooserDialog;
+class DialogView;
 
 namespace Ui {
 class MainWindow;
@@ -18,9 +19,11 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
+    DialogView* current();
     void open(const QString& path);
     void restoreWindow();
     void readSettings();
+    void setModifiedTabName(bool modified);
     void writeSettings();
 
     void closeEvent(QCloseEvent* event);
@@ -42,6 +45,7 @@ public slots:
     void onActionSave();
     void onActionSaveAs();
     void onActionFont();
+    void onDialogDataChanged(bool changed);
     void onTabCloseRequested(int index);
     void onFontAccepted();
 

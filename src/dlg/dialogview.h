@@ -30,11 +30,14 @@ public:
     ~DialogView();
 
     void loadItem(DialogItem* item);
+    bool modified() const;
+    QString name() const;
     const QString& path() const { return path_; }
     void selectFirst();
     void setColors(QColor entry, QColor reply, QColor link);
     void setFont(const QFont& font);
     void setModel(DialogModel* model);
+    void setModified(bool modified);
 
 public slots:
     void onAbortScriptChanged(const QString& value);
@@ -68,6 +71,9 @@ public slots:
     void onSpeakerTableCellChanged(int row, int col);
     void onSpeakersListDelClicked();
 
+signals:
+    void dataChanged(bool changed);
+
 private:
     Ui::DialogView* ui;
     QString path_;
@@ -93,6 +99,7 @@ private:
     bool feminine_ = false;
     QMediaPlayer* player_ = nullptr;
     QAudioOutput* output_ = nullptr;
+    bool modified_ = false;
 };
 
 #endif // DIALOGVIEW_H
