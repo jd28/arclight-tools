@@ -45,13 +45,13 @@ MainWindow::MainWindow(QWidget* parent)
     QObject::connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::onActionAbout);
     QObject::connect(ui->actionAbout_Qt, &QAction::triggered, this, &MainWindow::onActionAboutQt);
 
-    QObject::connect(ui->actionAdd, &QAction::triggered, this, &MainWindow::onActionAdd);
     QObject::connect(ui->actionClose, &QAction::triggered, this, &MainWindow::onActionClose);
     QObject::connect(ui->actionFont, &QAction::triggered, this, &MainWindow::onActionFont);
     QObject::connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpen);
     QObject::connect(ui->actionSave, &QAction::triggered, this, &MainWindow::onActionSave);
     QObject::connect(ui->actionSaveAs, &QAction::triggered, this, &MainWindow::onActionSaveAs);
 
+    QObject::connect(ui->actionAdd, &QAction::triggered, this, &MainWindow::onActionAdd);
     QObject::connect(ui->actionCopy, &QAction::triggered, this, &MainWindow::onActionCopy);
     QObject::connect(ui->actionCut, &QAction::triggered, this, &MainWindow::onActionCut);
     QObject::connect(ui->actionPaste, &QAction::triggered, this, &MainWindow::onActionPaste);
@@ -233,18 +233,31 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 // -- Public Slots ------------------------------------------------------------
 
-void MainWindow::onActionOpen()
+void MainWindow::onActionAbout()
 {
-    QString fn = QFileDialog::getOpenFileName(this, "Open Dialog", "", "Dlg (*.dlg *.dlg.json)");
-    if (!fn.isEmpty()) {
-        open(fn);
-    }
+    QMessageBox::about(nullptr, "dlg",
+        R"end(<h3>About dlg</h3><br>
+              A utility for creating/modifying DLG files.<br><br>
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.)end");
 }
 
-void MainWindow::onActionRecent()
+void MainWindow::onActionAboutQt()
 {
-    QAction* act = reinterpret_cast<QAction*>(sender());
-    open(act->data().toString());
+    QMessageBox::aboutQt(this);
+}
+
+void MainWindow::onActionAdd()
+{
+    auto tab = reinterpret_cast<DialogView*>(ui->dialogTabWidget->widget(ui->dialogTabWidget->currentIndex()));
+    if (!tab) { return; }
+    tab->onDialogAddNode();
 }
 
 void MainWindow::onActionClose()
@@ -282,33 +295,6 @@ void MainWindow::onActionFont()
     font_dialog_->font = font_;
     font_dialog_->update();
     font_dialog_->show();
-}
-
-void MainWindow::onActionAbout()
-{
-    QMessageBox::about(nullptr, "dlg",
-        R"end(<h3>About dlg</h3><br>
-              A utility for creating/modifying DLG files.<br><br>
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.)end");
-}
-
-void MainWindow::onActionAboutQt()
-{
-    QMessageBox::aboutQt(this);
-}
-
-void MainWindow::onActionAdd()
-{
-    auto tab = reinterpret_cast<DialogView*>(ui->dialogTabWidget->widget(ui->dialogTabWidget->currentIndex()));
-    if (!tab) { return; }
-    tab->onDialogAddNode();
 }
 
 void MainWindow::onFontAccepted()
@@ -393,6 +379,12 @@ void MainWindow::onActionPasteAsLink()
     auto tab = reinterpret_cast<DialogView*>(ui->dialogTabWidget->widget(ui->dialogTabWidget->currentIndex()));
     if (!tab) { return; }
     tab->onDialogPasteLinkNode();
+}
+
+void MainWindow::onActionRecent()
+{
+    QAction* act = reinterpret_cast<QAction*>(sender());
+    open(act->data().toString());
 }
 
 void MainWindow::onActionSave()
