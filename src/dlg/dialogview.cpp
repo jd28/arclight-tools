@@ -303,6 +303,7 @@ bool DialogView::modified() const
 
 QString DialogView::name() const
 {
+    if (path_.isEmpty()) { return "untitled"; }
     QFileInfo fileInfo{path_};
     return fileInfo.fileName();
 }

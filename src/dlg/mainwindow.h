@@ -36,6 +36,7 @@ public slots:
     void onActionCopy();
     void onActionCut();
     void onActionDelete();
+    void onActionNew();
     void onActionOpen();
     void onActionLangauge();
     void onActionLangaugeFeminine();

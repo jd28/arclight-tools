@@ -47,6 +47,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     QObject::connect(ui->actionClose, &QAction::triggered, this, &MainWindow::onActionClose);
     QObject::connect(ui->actionFont, &QAction::triggered, this, &MainWindow::onActionFont);
+    QObject::connect(ui->actionNew, &QAction::triggered, this, &MainWindow::onActionNew);
     QObject::connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpen);
     QObject::connect(ui->actionSave, &QAction::triggered, this, &MainWindow::onActionSave);
     QObject::connect(ui->actionSaveAs, &QAction::triggered, this, &MainWindow::onActionSaveAs);
@@ -367,6 +368,36 @@ void MainWindow::onActionLangaugeFeminine()
     emit languageChanged(lang_, feminine_);
 }
 
+void MainWindow::onActionNew()
+{
+    nw::Dialog* dlg = new nw::Dialog;
+
+    auto tv = new DialogView("");
+    auto model = new DialogModel(dlg, tv);
+    model->loadRootItems();
+    connect(this, &MainWindow::languageChanged, tv, &DialogView::onLanguageChanged);
+    connect(tv, &DialogView::dataChanged, this, &MainWindow::onDialogDataChanged);
+
+    tv->setModel(model);
+    tv->onLanguageChanged(lang_, feminine_);
+    tv->setColors(entry_color_, reply_color_, link_color_);
+    tv->setFont(font_);
+    tv->selectFirst();
+
+    int idx = ui->dialogTabWidget->addTab(tv, tv->name());
+    ui->dialogTabWidget->setTabsClosable(true);
+    ui->dialogTabWidget->setCurrentIndex(idx);
+    ui->actionSave->setEnabled(false);
+}
+
+void MainWindow::onActionOpen()
+{
+    QString fn = QFileDialog::getOpenFileName(this, "Open Dialog", "", "Dlg (*.dlg *.dlg.json)");
+    if (!fn.isEmpty()) {
+        open(fn);
+    }
+}
+
 void MainWindow::onActionPaste()
 {
     auto tab = reinterpret_cast<DialogView*>(ui->dialogTabWidget->widget(ui->dialogTabWidget->currentIndex()));
@@ -403,6 +434,7 @@ void MainWindow::onActionSaveAs()
 
     QFileInfo fileInfo(tab->path());
     ui->dialogTabWidget->setTabText(index, fileInfo.fileName());
+    ui->actionSave->setEnabled(!tab->path().isEmpty());
 }
 
 void MainWindow::onDialogDataChanged(bool changed)
