@@ -24,6 +24,7 @@ public:
     void restoreWindow();
     void readSettings();
     void setModifiedTabName(bool modified);
+    void updateRecent(const QString& path);
     void writeSettings();
 
     void closeEvent(QCloseEvent* event);

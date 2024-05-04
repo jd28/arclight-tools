@@ -123,19 +123,7 @@ void MainWindow::open(const QString& path)
         return;
     }
 
-    if (recentFiles_.contains(path)) {
-        recentFiles_.removeOne(path);
-    } else if (recentFiles_.size() >= 10) {
-        recentFiles_.pop_back();
-    }
-    recentFiles_.insert(0, path);
-
-    for (int i = 0; i < recentFiles_.size(); ++i) {
-        recentActions_[i]->setData(recentFiles_[i]);
-        recentActions_[i]->setText(QString::fromStdString(
-            fmt::format("&{} - {}", i + 1, recentFiles_[i].toStdString())));
-        recentActions_[i]->setVisible(true);
-    }
+    updateRecent(path);
 
     auto tv = new DialogView(path);
     auto model = new DialogModel(dlg, tv);
@@ -203,6 +191,23 @@ void MainWindow::setModifiedTabName(bool modified)
         ui->dialogTabWidget->setTabText(ui->dialogTabWidget->currentIndex(), name.isEmpty() ? "untitled*" : name + "*");
     } else {
         ui->dialogTabWidget->setTabText(ui->dialogTabWidget->currentIndex(), name);
+    }
+}
+
+void MainWindow::updateRecent(const QString& path)
+{
+    if (recentFiles_.contains(path)) {
+        recentFiles_.removeOne(path);
+    } else if (recentFiles_.size() >= 10) {
+        recentFiles_.pop_back();
+    }
+    recentFiles_.insert(0, path);
+
+    for (int i = 0; i < recentFiles_.size(); ++i) {
+        recentActions_[i]->setData(recentFiles_[i]);
+        recentActions_[i]->setText(QString::fromStdString(
+            fmt::format("&{} - {}", i + 1, recentFiles_[i].toStdString())));
+        recentActions_[i]->setVisible(true);
     }
 }
 
@@ -435,6 +440,9 @@ void MainWindow::onActionSaveAs()
     QFileInfo fileInfo(tab->path());
     ui->dialogTabWidget->setTabText(index, fileInfo.fileName());
     ui->actionSave->setEnabled(!tab->path().isEmpty());
+    if (!tab->path().isEmpty()) {
+        updateRecent(tab->path());
+    }
 }
 
 void MainWindow::onDialogDataChanged(bool changed)
