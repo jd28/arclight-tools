@@ -13,7 +13,6 @@
             "binaryDir": "${sourceDir}/build",
             "generator": "Ninja",
             "cacheVariables": {
-                "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin",
                 "ROLLNW_BUILD_BENCHMARKS": {
                     "type": "BOOL",
                     "value": "OFF"
