@@ -43,7 +43,7 @@ MainWindow::MainWindow(QWidget* parent)
     }
 
     QObject::connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::onActionAbout);
-    QObject::connect(ui->actionAbout_Qt, &QAction::triggered, this, &MainWindow::onActionAboutQt);
+    QObject::connect(ui->actionAboutQt, &QAction::triggered, this, &MainWindow::onActionAboutQt);
 
     QObject::connect(ui->actionClose, &QAction::triggered, this, &MainWindow::onActionClose);
     QObject::connect(ui->actionFont, &QAction::triggered, this, &MainWindow::onActionFont);

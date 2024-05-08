@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget* parent)
     }
 
     QObject::connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::onActionAbout);
-    QObject::connect(ui->actionAbout_Qt, &QAction::triggered, this, &MainWindow::onActionAboutQt);
+    QObject::connect(ui->actionAboutQt, &QAction::triggered, this, &MainWindow::onActionAboutQt);
     QObject::connect(ui->actionExit, &QAction::triggered, this, &MainWindow::onActionExit);
     QObject::connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpen);
     QObject::connect(ui->actionOpen_Folder, &QAction::triggered, this, &MainWindow::onActionOpenFolder);

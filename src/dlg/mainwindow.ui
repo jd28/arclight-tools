@@ -62,7 +62,7 @@
      <string>Help</string>
     </property>
     <addaction name="actionAbout"/>
-    <addaction name="actionAbout_Qt"/>
+    <addaction name="actionAboutQt"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
@@ -138,7 +138,7 @@
     <string>About</string>
    </property>
   </action>
-  <action name="actionAbout_Qt">
+  <action name="actionAboutQt">
    <property name="icon">
     <iconset theme="help-about"/>
    </property>
