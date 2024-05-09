@@ -19,12 +19,6 @@ add_library(arclight-widgets STATIC
     TlkSelector/tlkselector.cpp
     TlkSelector/tlkselector.ui
 
-    TlkModel.cpp
-    TlkModel.hpp
-    TlkView.cpp
-    TlkView.hpp
-    TlkView.ui
-
     util/restypeicons.cpp
 )
 
@@ -32,6 +26,7 @@ add_subdirectory(ContainerView)
 add_subdirectory(DialogView)
 add_subdirectory(LanguageMenu)
 add_subdirectory(qtpropertybrowser)
+add_subdirectory(TlkView)
 
 target_include_directories(arclight-widgets PRIVATE
     ${CMAKE_SOURCE_DIR}/external/rollnw/external
