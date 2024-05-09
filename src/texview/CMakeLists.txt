@@ -55,3 +55,5 @@ target_link_libraries(texview PRIVATE
     dl
 )
 endif()
+
+install(TARGETS texview)

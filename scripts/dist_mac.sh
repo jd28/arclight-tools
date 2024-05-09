@@ -11,6 +11,9 @@ cmake --preset macos
 echo "Building..."
 cmake --build --preset default
 
+echo "Installing..."
+cmake --install build/ --prefix .
+
 echo "Running macdeployqt..."
 pushd bin/ > /dev/null
 ${Qt6_DIR}/bin/macdeployqt erfherder.app -dmg -always-overwrite

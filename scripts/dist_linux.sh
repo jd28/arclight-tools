@@ -10,3 +10,6 @@ cmake --preset default
 
 echo "Building..."
 cmake --build --preset default
+
+echo "Installing..."
+cmake --install build/ --prefix .
