@@ -23,6 +23,8 @@ target_include_directories(DialogView PRIVATE
 
 target_link_libraries(DialogView PRIVATE
     nw
+    arclight-external
+    arclight-widgets
     Qt6::Widgets
     Qt6::Core
     Qt6::Gui
