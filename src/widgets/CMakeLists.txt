@@ -20,9 +20,12 @@ add_library(arclight-widgets STATIC
     TlkSelector/tlkselector.ui
 
     util/restypeicons.cpp
+    checkboxdelegate.h
+    checkboxdelegate.cpp
 )
 
 add_subdirectory(ContainerView)
+add_subdirectory(CreatureView)
 add_subdirectory(DialogView)
 add_subdirectory(LanguageMenu)
 add_subdirectory(qtpropertybrowser)
