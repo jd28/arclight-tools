@@ -10,6 +10,9 @@ add_library(arclight-widgets STATIC
     AbstractTreeModel.cpp
     AbstractTreeModel.hpp
 
+    ArclightView.h
+    ArcLightView.cpp
+
     ContainerModel.cpp
     ContainerModel.hpp
     ContainerWidget.cpp
