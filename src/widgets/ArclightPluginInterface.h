@@ -35,7 +35,7 @@ public:
     virtual QString name() const = 0;
 
     /// Gets the resource types this plugin is able to handle.
-    virtual QList<nw::ResourceType> resource_types() const = 0;
+    virtual QList<nw::ResourceType::type> resource_types() const = 0;
 
     /// Sets the current view
     virtual void set_current(ArclightView* view) = 0;
