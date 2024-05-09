@@ -8,13 +8,13 @@
 #include <QWidget>
 
 namespace Ui {
-class ContainerWidgetUI;
+class ContainerViewUI;
 }
 
-class ContainerWidget : public QWidget {
+class ContainerView : public QWidget {
 public:
-    ContainerWidget(nw::Container* container, int columns, QWidget* parent = nullptr);
-    virtual ~ContainerWidget();
+    ContainerView(nw::Container* container, int columns, QWidget* parent = nullptr);
+    virtual ~ContainerView();
 
     nw::Container* container();
     ContainerModel* model();
@@ -22,7 +22,7 @@ public:
     QTableView* table();
 
 private:
-    Ui::ContainerWidgetUI* ui_;
+    Ui::ContainerViewUI* ui_;
     std::unique_ptr<ContainerSortFilterProxyModel> proxy_;
     std::unique_ptr<ContainerModel> model_;
     std::unique_ptr<nw::Container> container_;

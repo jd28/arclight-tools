@@ -1,7 +1,6 @@
 #include "ContainerModel.hpp"
 
-#include "nw/util/platform.hpp"
-#include "util/restypeicons.h"
+#include "../util/restypeicons.h"
 
 extern "C" {
 #include <fzy/match.h>
@@ -10,6 +9,7 @@ extern "C" {
 #include <nw/log.hpp>
 #include <nw/resources/Erf.hpp>
 #include <nw/resources/ResourceType.hpp>
+#include <nw/util/platform.hpp>
 #include <nw/util/string.hpp>
 
 #include <QFileInfo>

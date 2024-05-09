@@ -45,6 +45,7 @@ target_link_libraries(erfherder PRIVATE
     arclight-widgets
     nw
     arclight-external
+    ContainerView
     Qt6::Widgets
 )
 
@@ -53,3 +54,5 @@ target_link_libraries(erfherder PRIVATE
     dl
 )
 endif()
+
+install(TARGETS erfherder)

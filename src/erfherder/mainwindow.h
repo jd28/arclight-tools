@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "widgets/ContainerWidget.hpp"
+#include "ContainerView/ContainerView.hpp"
 
 #include <QMainWindow>
 #include <QSettings>
@@ -18,7 +18,7 @@ public:
     ~MainWindow();
 
     void open(const QString& path);
-    ContainerWidget* current();
+    ContainerView* current();
     void restoreWindow();
     void writeSettings();
 
@@ -53,7 +53,7 @@ private:
     void setModifiedTabName(bool modified);
 
     Ui::MainWindow* ui_;
-    ContainerWidget* currentContainer_;
+    ContainerView* currentContainer_;
     QStringList recentFiles_;
     QList<QAction*> recentActions_;
 

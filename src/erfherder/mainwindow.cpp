@@ -62,9 +62,9 @@ MainWindow::~MainWindow()
     delete ui_;
 }
 
-ContainerWidget* MainWindow::current()
+ContainerView* MainWindow::current()
 {
-    return reinterpret_cast<ContainerWidget*>(ui_->containerTabWidget->currentWidget());
+    return reinterpret_cast<ContainerView*>(ui_->containerTabWidget->currentWidget());
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -78,7 +78,7 @@ void MainWindow::open(const QString& path)
     if (!QFileInfo::exists(path)) { return; }
     std::string p = path.toStdString();
     for (int i = 0; i < ui_->containerTabWidget->count(); ++i) {
-        auto cw = reinterpret_cast<ContainerWidget*>(ui_->containerTabWidget->widget(i));
+        auto cw = reinterpret_cast<ContainerView*>(ui_->containerTabWidget->widget(i));
         if (!cw) { continue; }
         if (p == cw->container()->path()) {
             ui_->containerTabWidget->setCurrentIndex(i);
@@ -88,7 +88,7 @@ void MainWindow::open(const QString& path)
     }
 
     nw::Container* c = new nw::Erf(p);
-    currentContainer_ = new ContainerWidget(c, 2);
+    currentContainer_ = new ContainerView(c, 2);
     int idx = ui_->containerTabWidget->addTab(currentContainer_, QString::fromStdString(c->name()));
     ui_->containerTabWidget->setTabsClosable(true);
     ui_->containerTabWidget->setCurrentIndex(idx);
@@ -122,7 +122,7 @@ void MainWindow::restoreWindow()
 void MainWindow::onActionNew()
 {
     nw::Container* c = new nw::Erf();
-    currentContainer_ = new ContainerWidget(c, 2);
+    currentContainer_ = new ContainerView(c, 2);
     int idx = ui_->containerTabWidget->addTab(currentContainer_, "untitled");
     ui_->containerTabWidget->setTabsClosable(true);
     ui_->containerTabWidget->setCurrentIndex(idx);
@@ -271,7 +271,7 @@ void MainWindow::onRowsRemoved(const QModelIndex& parent, int first, int last)
 
 void MainWindow::onTabCloseRequested(int index)
 {
-    auto cw = reinterpret_cast<ContainerWidget*>(ui_->containerTabWidget->widget(index));
+    auto cw = reinterpret_cast<ContainerView*>(ui_->containerTabWidget->widget(index));
     ui_->containerTabWidget->removeTab(index);
     delete cw;
     if (!current()) {

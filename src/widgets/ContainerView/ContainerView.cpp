@@ -1,6 +1,6 @@
-#include "ContainerWidget.hpp"
+#include "ContainerView.hpp"
 
-#include "ui_ContainerWidget.h"
+#include "ui_ContainerView.h"
 
 #include <nw/log.hpp>
 #include <nw/resources/Erf.hpp>
@@ -9,9 +9,9 @@
 
 namespace fs = std::filesystem;
 
-ContainerWidget::ContainerWidget(nw::Container* container, int columns, QWidget* parent)
+ContainerView::ContainerView(nw::Container* container, int columns, QWidget* parent)
     : QWidget(parent)
-    , ui_{new Ui::ContainerWidgetUI}
+    , ui_{new Ui::ContainerViewUI}
     , proxy_{std::make_unique<ContainerSortFilterProxyModel>(this)}
     , model_{std::make_unique<ContainerModel>(container, this)}
     , container_{container}
@@ -36,27 +36,27 @@ ContainerWidget::ContainerWidget(nw::Container* container, int columns, QWidget*
     ui_->containerView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
 }
 
-ContainerWidget::~ContainerWidget()
+ContainerView::~ContainerView()
 {
     delete ui_;
 }
 
-nw::Container* ContainerWidget::container()
+nw::Container* ContainerView::container()
 {
     return container_.get();
 }
 
-ContainerModel* ContainerWidget::model()
+ContainerModel* ContainerView::model()
 {
     return model_.get();
 }
 
-ContainerSortFilterProxyModel* ContainerWidget::proxy()
+ContainerSortFilterProxyModel* ContainerView::proxy()
 {
     return proxy_.get();
 }
 
-QTableView* ContainerWidget::table()
+QTableView* ContainerView::table()
 {
     return ui_->containerView;
 }

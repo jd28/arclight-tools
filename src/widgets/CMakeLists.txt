@@ -15,12 +15,6 @@ add_library(arclight-widgets STATIC
     ArclightPluginInterface.h
     ArcLightPluginInterface.cpp
 
-    ContainerModel.cpp
-    ContainerModel.hpp
-    ContainerWidget.cpp
-    ContainerWidget.hpp
-    ContainerWidget.ui
-
     TlkSelector/tlkselector.h
     TlkSelector/tlkselector.cpp
     TlkSelector/tlkselector.ui
@@ -34,6 +28,7 @@ add_library(arclight-widgets STATIC
     util/restypeicons.cpp
 )
 
+add_subdirectory(ContainerView)
 add_subdirectory(DialogView)
 add_subdirectory(LanguageMenu)
 add_subdirectory(qtpropertybrowser)
@@ -48,6 +43,5 @@ target_include_directories(arclight-widgets PRIVATE
 target_link_libraries(arclight-widgets PRIVATE
     nw
     arclight-external
-    qtpropertybrowser
     Qt6::Widgets
 )
