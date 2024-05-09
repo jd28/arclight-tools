@@ -12,6 +12,7 @@ class ArclightView : public QWidget {
 public:
     ArclightView(ArclightPluginInterface* plugin, QWidget* parent = nullptr);
     ArclightPluginInterface* plugin() const;
+    virtual ~ArclightView() = default;
 
     /// Is view read only
     bool read_only() const;
