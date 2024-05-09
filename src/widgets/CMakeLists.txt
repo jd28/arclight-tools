@@ -34,6 +34,7 @@ add_library(arclight-widgets STATIC
     util/restypeicons.cpp
 )
 
+add_subdirectory(DialogView)
 add_subdirectory(LanguageMenu)
 add_subdirectory(qtpropertybrowser)
 

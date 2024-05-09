@@ -6,13 +6,6 @@ set(SRC_FILES
     mainwindow.h
     mainwindow.cpp
     mainwindow.ui
-    dialogmodel.h
-    dialogmodel.cpp
-    dialogview.h
-    dialogview.cpp
-    dialogview.ui
-    dialogtreeview.h
-    dialogtreeview.cpp
     fontchooserdialog.h
     fontchooserdialog.cpp
     fontchooserdialog.ui
@@ -52,6 +45,7 @@ target_include_directories(dlg PRIVATE
     ${CMAKE_SOURCE_DIR}/external/rollnw/lib
     ${CMAKE_SOURCE_DIR}/external/ZFontIcon
     ${CMAKE_SOURCE_DIR}/external/
+    ${CMAKE_SOURCE_DIR}/src/widgets/
 )
 
 target_link_libraries(dlg PRIVATE
@@ -60,6 +54,7 @@ target_link_libraries(dlg PRIVATE
     sqlite3
     arclight-external
     qtpropertybrowser
+    DialogView
     Qt6::Widgets
     Qt6::Multimedia
 )
@@ -69,3 +64,5 @@ target_link_libraries(dlg PRIVATE
     dl
 )
 endif()
+
+install(TARGETS dlg)

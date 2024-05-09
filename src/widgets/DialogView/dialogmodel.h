@@ -1,7 +1,7 @@
 #ifndef DIALOGMODEL_H
 #define DIALOGMODEL_H
 
-#include "widgets/AbstractTreeModel.hpp"
+#include "../AbstractTreeModel.hpp"
 
 #include "nw/i18n/Language.hpp"
 

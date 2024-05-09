@@ -1,8 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "dialogmodel.h"
-#include "dialogview.h"
+#include "DialogView/dialogmodel.h"
+#include "DialogView/dialogview.h"
 #include "fontchooserdialog.h"
 
 #include "nw/formats/Dialog.hpp"

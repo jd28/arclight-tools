@@ -1,6 +1,8 @@
 #ifndef DIALOGVIEW_H
 #define DIALOGVIEW_H
 
+#include "../ArclightView.h"
+
 #include "nw/i18n/Language.hpp"
 
 #include <QAbstractItemModel>
@@ -8,6 +10,7 @@
 
 struct DialogItem;
 class DialogModel;
+class ArclightPluginInterface;
 
 class QAudioOutput;
 class QCompleter;
@@ -22,11 +25,11 @@ namespace nw {
 struct DialogPtr;
 }
 
-class DialogView : public QWidget {
+class DialogView : public ArclightView {
     Q_OBJECT
 
 public:
-    explicit DialogView(QString path, QWidget* parent = nullptr);
+    explicit DialogView(QString path, ArclightPluginInterface* plugin = nullptr, QWidget* parent = nullptr);
     ~DialogView();
 
     void loadItem(DialogItem* item);
