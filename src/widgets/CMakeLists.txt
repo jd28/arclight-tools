@@ -16,8 +16,6 @@ add_library(arclight-widgets STATIC
     ContainerWidget.hpp
     ContainerWidget.ui
 
-    LanguageMenu.cpp
-    LanguageMenu.hpp
     TlkSelector/tlkselector.h
     TlkSelector/tlkselector.cpp
     TlkSelector/tlkselector.ui
@@ -31,6 +29,7 @@ add_library(arclight-widgets STATIC
     util/restypeicons.cpp
 )
 
+add_subdirectory(LanguageMenu)
 add_subdirectory(qtpropertybrowser)
 
 target_include_directories(arclight-widgets PRIVATE

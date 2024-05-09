@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "widgets/LanguageMenu.hpp"
+#include "LanguageMenu/LanguageMenu.h"
 
 #include <nw/log.hpp>
 #include <nw/resources/Erf.hpp>

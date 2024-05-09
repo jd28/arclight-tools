@@ -38,6 +38,7 @@ target_include_directories(erfherder PRIVATE
     ${CMAKE_SOURCE_DIR}/external/rollnw/lib
     ${CMAKE_SOURCE_DIR}/external/ZFontIcon
     ${CMAKE_SOURCE_DIR}/external/
+    ${CMAKE_SOURCE_DIR}/src/widgets/
 )
 
 target_link_libraries(erfherder PRIVATE
