@@ -24,9 +24,10 @@ elseif(UNIX AND NOT APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-sized-deallocation")
 endif()
 
+add_subdirectory(external)
+
+# Don't set before external
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
-
-add_subdirectory(external)
 add_subdirectory(src)
