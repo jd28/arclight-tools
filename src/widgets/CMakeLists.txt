@@ -12,6 +12,8 @@ add_library(arclight-widgets STATIC
 
     ArclightView.h
     ArcLightView.cpp
+    ArclightPluginInterface.h
+    ArcLightPluginInterface.cpp
 
     ContainerModel.cpp
     ContainerModel.hpp
