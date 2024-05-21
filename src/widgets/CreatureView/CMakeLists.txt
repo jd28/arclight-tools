@@ -34,6 +34,7 @@ add_library(CreatureView STATIC
 target_compile_definitions(CreatureView PUBLIC -DGLM_ENABLE_EXPERIMENTAL)
 
 target_include_directories(CreatureView PRIVATE
+    ./
     ${CMAKE_SOURCE_DIR}/external/rollnw/external
     ${CMAKE_SOURCE_DIR}/external/rollnw/external/sqlite-3.45.2
     ${CMAKE_SOURCE_DIR}/external/rollnw/external/minizip/include
