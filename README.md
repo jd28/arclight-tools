@@ -12,10 +12,15 @@ Tools subproject of something referred to as Arclight
 ### Platforms
 
 - Linux: The latest LTS of Ubuntu, roughly
-- macOS:
+- macOS: macOS Monterey and above.  Need to set up code signing.
 - Windows: Windows 10 and above, Visual Studio 2019 seems to be the latest Qt supported version
 
-## erfherder
+## The Tools
+
+Even though the utlimate goal of this project is something tooset-ish.  There will be some tools added
+that are usefully independently of a toolset context.  They
+
+### erfherder
 **status:** beta
 
 erfherder is an editor for [BioWare's ERF File Format](docs/bioware_aurora_engine_file_formats/Bioware_Aurora_ERF_Format.pdf).  It's features include:
@@ -26,14 +31,14 @@ erfherder is an editor for [BioWare's ERF File Format](docs/bioware_aurora_engin
 
 ![erfherder](screenshots/erfherder-2022-03-27.gif)
 
-## texview
+### texview
 **status:** beta
 
 A super mid and basic texture gallery viewer for Bioware DDS, Standard DDS, TGA, and PLT texures.  It can open Key, Erf, and Zip containers.  Screenshot is using NWN:EE main key file circa 36-2.
 
 ![texview](screenshots/texi-2024-04-09.gif)
 
-## dlg
+### dlg
 **status:** alpha
 
 An editor for DLG conversation files and rollnw DLG json files.  A project of this level of complexity requires a fair bit of polish.. It has most toolset features, the main missing things is:
@@ -43,6 +48,44 @@ An editor for DLG conversation files and rollnw DLG json files.  A project of th
 * Loading a TLK file and handling dialog nodes with string references.
 
 ![dlg](screenshots/dlg-2024-05-01.gif)
+
+-----------------------------------------------------------------------------
+
+## The Renderer
+
+Currently the built in renderer only supports the most basic models.  It uses OpenGL 3.3
+just as NWN:EE does.  Ultimately, the goal is to replace this with a more advanced graphics
+API like [DiligentEngine](https://github.com/DiligentGraphics/DiligentEngine)
+
+Features:
+* Basic Meshses
+* Skin Meshes
+* Un-lerped Animations
+
+-----------------------------------------------------------------------------
+
+## The Widgets
+
+### Container View
+
+A view of NWN containers.  See erfheder above.
+
+### Creature View - Stats
+
+To those familiar, this is essentially a copy of axs' modified toolset layout.  Expanded
+class selection to 8 classes as NWN:EE allows.
+
+![stats](screenshots/creature-view-stats.png)
+
+### Creature View - Feats
+
+Feat selection with handy fuzzy searching.
+
+![stats](screenshots/creature-view-feats.png)
+
+### Dialog View
+
+A tree view for NWN dialogs.  See dlg above.
 
 ## Acknowledgements, Credits, & Inspirations
 
