@@ -1,6 +1,7 @@
 #include "creatureappearanceview.h"
 #include "ui_creatureappearanceview.h"
 
+#include "nw/kernel/Rules.hpp"
 #include "nw/kernel/Strings.hpp"
 #include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Creature.hpp"
@@ -10,36 +11,56 @@
 CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::CreatureAppearanceView)
-    , creature_{creature}
 {
     ui->setupUi(this);
 
-    auto appearance_2da = nw::kernel::twodas().get("appearance");
-    if (!appearance_2da) {
-        throw std::runtime_error("Unable to load appearance.2da");
-    }
-
     int idx = 0;
+    bool is_dynamic = false;
     std::string temp;
-    for (size_t i = 0; i < appearance_2da->rows(); ++i) {
-        int32_t strref;
-        if (!appearance_2da->get_to(i, "STRING_REF", strref)) { continue; }
-        if (!appearance_2da->get_to(i, "RACE", temp)) { continue; }
 
-        auto string = nw::kernel::strings().get(static_cast<uint32_t>(strref));
+    auto& appearances = nw::kernel::rules().appearances;
+    for (size_t i = 0; i < appearances.entries.size(); ++i) {
+        if (!appearances.entries[i].valid()) { continue; }
+
+        auto string = nw::kernel::strings().get(appearances.entries[i].string_ref);
         if (string.empty()) { continue; }
 
-        if (temp.size() <= 1) {
+        if (appearances.entries[i].model.size() <= 1) {
             string = fmt::format("(Dynamic) {}", string);
         }
 
         ui->appearance->addItem(QString::fromStdString(string), int(i));
-        if (creature_->appearance.id == i) {
+        if (creature->appearance.id == i) {
             ui->appearance->setCurrentIndex(idx);
+            is_dynamic = appearances.entries[i].model.size() <= 1;
         }
         ++idx;
     }
     ui->appearance->model()->sort(0, Qt::AscendingOrder);
+
+    auto& phenotypes = nw::kernel::rules().phenotypes;
+    idx = 0;
+    for (size_t i = 0; i < phenotypes.entries.size(); ++i) {
+        if (!phenotypes.entries[i].valid()) { continue; }
+
+        auto string = nw::kernel::strings().get(phenotypes.entries[i].name_ref);
+        if (string.empty()) { continue; }
+
+        ui->phenotype->addItem(QString::fromStdString(string), int(i));
+        if (creature->appearance.phenotype == int(i)) {
+            ui->phenotype->setCurrentIndex(idx);
+        }
+        ++idx;
+    }
+    ui->phenotype->model()->sort(0, Qt::AscendingOrder);
+
+    if (is_dynamic) {
+        ui->phenotype->setDisabled(false);
+    } else {
+        ui->phenotype->setDisabled(true);
+        ui->phenotype->setPlaceholderText("-- None --");
+        ui->phenotype->setCurrentIndex(-1);
+    }
 
     auto wingmodel_2da = nw::kernel::twodas().get("wingmodel");
     if (!wingmodel_2da) {
@@ -51,7 +72,7 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
     for (size_t i = 1; i < wingmodel_2da->rows(); ++i) {
         if (!wingmodel_2da->get_to(i, "LABEL", temp) || temp.empty()) { continue; }
         ui->wings->addItem(QString::fromStdString(temp), int(i));
-        if (creature_->appearance.wings == uint32_t(idx)) {
+        if (creature->appearance.wings == uint32_t(idx)) {
             ui->wings->setCurrentIndex(idx);
         }
         ++idx;
@@ -68,7 +89,7 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
     for (size_t i = 1; i < tailmodel_2da->rows(); ++i) {
         if (!tailmodel_2da->get_to(i, "LABEL", temp) || temp.empty()) { continue; }
         ui->tails->addItem(QString::fromStdString(temp), int(i));
-        if (creature_->appearance.tail == uint32_t(idx)) {
+        if (creature->appearance.tail == uint32_t(idx)) {
             ui->tails->setCurrentIndex(idx);
         }
         ++idx;
@@ -77,6 +98,8 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
 
     ui->appearance->view()->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     connect(ui->appearance, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onAppearanceChange);
+
+    creature_ = creature;
 }
 
 CreatureAppearanceView::~CreatureAppearanceView()
@@ -89,6 +112,7 @@ CreatureAppearanceView::~CreatureAppearanceView()
 
 void CreatureAppearanceView::onAppearanceChange(int index)
 {
+    if (!creature_) { return; }
     creature_->appearance.id = static_cast<uint16_t>(ui->appearance->currentData(Qt::UserRole).toInt());
     emit dataChanged();
 }
