@@ -2,6 +2,7 @@
 
 #include "nw/formats/Dialog.hpp"
 
+#include <QApplication>
 #include <QColor>
 #include <QCoreApplication>
 #include <QFont>
@@ -43,6 +44,7 @@ QVariant DialogItem::data(int column) const
 DialogModel::DialogModel(nw::Dialog* dialog, QObject* parent)
     : AbstractTreeModel(parent)
     , dialog_{dialog}
+    , font_{QApplication::font()}
 {
 }
 

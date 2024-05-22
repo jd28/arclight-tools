@@ -57,9 +57,9 @@ public:
 private:
     std::unique_ptr<nw::Dialog> dialog_;
     QFont font_;
-    QColor entry_;
-    QColor reply_;
-    QColor link_;
+    QColor entry_ = Qt::blue;
+    QColor reply_ = Qt::green;
+    QColor link_ = Qt::gray;
 };
 
 #endif // DIALOGMODEL_H
