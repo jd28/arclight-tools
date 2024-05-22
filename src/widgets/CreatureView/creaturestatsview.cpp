@@ -28,7 +28,6 @@ CreatureStatsView::CreatureStatsView(nw::Creature* creature, QWidget* parent)
     connect(ui->acNatural, &QSpinBox::valueChanged, this, &CreatureStatsView::onAcNaturalChanged);
     updateSaves();
 
-    ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     QList<QPair<QString, int>> skill_list;
     if (auto skills_2da = nw::kernel::twodas().get("skills")) {
         for (size_t i = 0; i < skills_2da->rows(); ++i) {
@@ -53,6 +52,9 @@ CreatureStatsView::CreatureStatsView(nw::Creature* creature, QWidget* parent)
         ui->tableWidget->setItem(row, 1, y);
         ++row;
     }
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+
     connect(ui->tableWidget, &QTableWidget::cellChanged, this, &CreatureStatsView::onSkillChanged);
 
     auto ranges_2da = nw::kernel::twodas().get("ranges");
