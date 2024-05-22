@@ -1,6 +1,7 @@
 #include "dialogmodel.h"
 
 #include "nw/formats/Dialog.hpp"
+#include "nw/kernel/Strings.hpp"
 
 #include <QApplication>
 #include <QColor>
@@ -34,7 +35,7 @@ QVariant DialogItem::data(int column) const
     default:
         return QVariant();
     case 0:
-        return QString::fromStdString(n->text.get(model_->lang_, model_->feminine_)).trimmed();
+        return QString::fromStdString(nw::kernel::strings().get(n->text, model_->feminine_)).trimmed();
     }
 }
 
