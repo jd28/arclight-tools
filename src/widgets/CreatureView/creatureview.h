@@ -1,6 +1,8 @@
 #ifndef CREATUREVIEW_H
 #define CREATUREVIEW_H
 
+#include "../ArclightView.h"
+
 #include <QWidget>
 
 class CreatureFeatSelector;
@@ -13,7 +15,7 @@ namespace Ui {
 class CreatureView;
 }
 
-class CreatureView : public QWidget {
+class CreatureView : public ArclightView {
     Q_OBJECT
 
 public:

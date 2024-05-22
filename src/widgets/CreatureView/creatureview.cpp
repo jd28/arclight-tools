@@ -18,7 +18,7 @@
 #include <QScreen>
 
 CreatureView::CreatureView(nw::Creature* creature, QWidget* parent)
-    : QWidget(parent)
+    : ArclightView(parent)
     , ui(new Ui::CreatureView)
 {
     ui->setupUi(this);
