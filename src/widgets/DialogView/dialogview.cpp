@@ -31,7 +31,17 @@ DialogView::DialogView(QString path, QWidget* parent)
 {
     ui->setupUi(this);
     setupUi();
+}
 
+DialogView::DialogView(nw::Dialog* dialog, QWidget* parent)
+    : ArclightView(parent)
+    , ui(new Ui::DialogView)
+    , model_{new DialogModel(dialog, this)}
+{
+    ui->setupUi(this);
+    setupUi();
+    model_->loadRootItems();
+    setModel(model_);
 }
 
 DialogView::~DialogView()

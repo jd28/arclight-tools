@@ -22,6 +22,7 @@ class DialogView;
 }
 
 namespace nw {
+struct Dialog;
 struct DialogPtr;
 }
 
@@ -29,6 +30,7 @@ class DialogView : public ArclightView {
     Q_OBJECT
 
 public:
+    explicit DialogView(nw::Dialog* dialog, QWidget* parent = nullptr);
     explicit DialogView(QString path, QWidget* parent = nullptr);
     ~DialogView();
 
