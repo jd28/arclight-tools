@@ -42,6 +42,8 @@ public:
     void setModel(DialogModel* model);
     void setModified(bool modified);
 
+    void setupUi();
+
 public slots:
     void onAbortScriptChanged(const QString& value);
     void onActionAnimationChanged(int index);

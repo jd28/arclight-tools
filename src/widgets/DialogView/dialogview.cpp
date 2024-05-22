@@ -30,113 +30,8 @@ DialogView::DialogView(QString path, QWidget* parent)
     , path_{path}
 {
     ui->setupUi(this);
+    setupUi();
 
-    context_menu_ = new QMenu(this);
-    add_ctx_action_ = context_menu_->addAction("Add");
-    add_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("list-add")));
-    context_menu_->addSeparator();
-    copy_ctx_action_ = context_menu_->addAction("Copy");
-    copy_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("edit-copy")));
-    cut_ctx_action_ = context_menu_->addAction("Cut");
-    cut_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("edit-cut")));
-    context_menu_->addSeparator();
-    paste_ctx_action_ = context_menu_->addAction("Paste");
-    paste_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("edit-paste")));
-    paste_link_ctx_action_ = context_menu_->addAction("Paste As Link");
-    paste_link_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("insert-link")));
-    context_menu_->addSeparator();
-    delete_ctx_action_ = context_menu_->addAction("Delete");
-    delete_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("edit-delete")));
-
-    connect(add_ctx_action_, &QAction::triggered, this, &DialogView::onDialogAddNode);
-    connect(copy_ctx_action_, &QAction::triggered, this, &DialogView::onDialogCopyNode);
-    connect(cut_ctx_action_, &QAction::triggered, this, &DialogView::onDialogCutNode);
-    connect(paste_ctx_action_, &QAction::triggered, this, &DialogView::onDialogPasteNode);
-    connect(paste_link_ctx_action_, &QAction::triggered, this, &DialogView::onDialogPasteLinkNode);
-    connect(delete_ctx_action_, &QAction::triggered, this, &DialogView::onDialogDeleteNode);
-
-    ui->actionsButton->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_code));
-    ui->languageButton->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_language));
-
-    // Action Script
-    connect(ui->actionScript, &QLineEdit::textChanged, this, &DialogView::onActionScriptChanged);
-    connect(ui->actionAnimation, &QComboBox::currentIndexChanged, this, &DialogView::onActionAnimationChanged);
-
-    // Action Param
-    connect(ui->actionParams, &QTableWidget::cellChanged, this, &DialogView::onActionParamCellChanged);
-    ui->actionParamAdd->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_plus, Qt::green));
-    ui->actionParamDel->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_minus, Qt::red));
-    connect(ui->actionParamAdd, &QPushButton::clicked, this, &DialogView::onActionParamAddClicked);
-    connect(ui->actionParamDel, &QPushButton::clicked, this, &DialogView::onActionParamDelClicked);
-
-    // Action Sound
-    connect(ui->actionSound, &QLineEdit::textChanged, this, &DialogView::onActionSoundChanged);
-    connect(ui->actionSoundPlay, &QPushButton::clicked, this, &DialogView::onActionSoundClicked);
-
-    // Condition Script
-    connect(ui->conditionScript, &QLineEdit::textChanged, this, &DialogView::onConditionScriptChanged);
-
-    // Condition Param
-    ui->conditionParamsAdd->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_plus, Qt::green));
-    ui->conditionParamsDel->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_minus, Qt::red));
-    connect(ui->conditionParamsAdd, &QPushButton::clicked, this, &DialogView::onConditionParamAddClicked);
-    connect(ui->conditionParamsDel, &QPushButton::clicked, this, &DialogView::onConditionParamDelClicked);
-    connect(ui->conditionParams, &QTableWidget::cellChanged, this, &DialogView::onConditionParamCellChanged);
-
-    // Dialog Text
-    connect(ui->dialogTextEdit, &QTextEdit::textChanged, this, &DialogView::onDialogTextChanged);
-
-    // Dialog View
-    connect(ui->dialogView, &DialogTreeView::customContextMenuRequested, this, &DialogView::onCustomContextMenu);
-
-    // Speakers table
-    ui->speakersListAdd->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_plus, Qt::green));
-    ui->speakersListDel->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_minus, Qt::red));
-    connect(ui->speakersListAdd, &QPushButton::clicked, this, &DialogView::onSpeakersListAddClicked);
-    connect(ui->speakersListDel, &QPushButton::clicked, this, &DialogView::onSpeakersListDelClicked);
-    connect(ui->speakersTable, &QTableWidget::cellChanged, this, &DialogView::onSpeakerTableCellChanged);
-
-    // DLG wide Settings
-    connect(ui->noZoom, &QCheckBox::stateChanged, this, &DialogView::onNoZoomChanged);
-    connect(ui->abortLineEdit, &QLineEdit::textChanged, this, &DialogView::onAbortScriptChanged);
-    connect(ui->endLineEdit, &QLineEdit::textChanged, this, &DialogView::onEndScriptChanged);
-
-    // Comment
-    connect(ui->commentText, &QTextEdit::textChanged, this, &DialogView::onCommentTextChanged);
-
-    // [TODO] persist these values
-    auto width = qApp->primaryScreen()->geometry().width();
-    auto height = qApp->primaryScreen()->geometry().height();
-    ui->splitter->setSizes(QList<int>() << width * 3 / 4 << width * 1 / 4);
-    ui->splitter_2->setSizes(QList<int>() << height * 3 / 4 << height * 1 / 4);
-
-
-    QStringList scripts;
-    auto get_scripts = [&scripts](const nw::Resource& res) {
-        // Note: we only care about compiled scripts (for now).
-        if (res.type != nw::ResourceType::ncs) { return; }
-        scripts << QString::fromStdString(res.resref.string());
-    };
-
-    nw::kernel::resman().visit(get_scripts);
-
-    scripts.sort(Qt::CaseInsensitive);
-    script_completer_ = new QCompleter(scripts, this);
-    ui->actionScript->setCompleter(script_completer_);
-    ui->conditionScript->setCompleter(script_completer_);
-    ui->abortLineEdit->setCompleter(script_completer_);
-    ui->endLineEdit->setCompleter(script_completer_);
-
-    QStringList sounds;
-    auto get_sounds = [&sounds](const nw::Resource& res) {
-        if (!nw::ResourceType::check_category(nw::ResourceType::sound, res.type)) { return; }
-        sounds << QString::fromStdString(res.resref.string());
-    };
-
-    nw::kernel::resman().visit(get_sounds);
-    sounds.sort(Qt::CaseInsensitive);
-    sound_completer_ = new QCompleter(sounds, this);
-    ui->actionSound->setCompleter(sound_completer_);
 }
 
 DialogView::~DialogView()
@@ -342,6 +237,115 @@ void DialogView::setModified(bool modified)
 {
     modified_ = modified;
     emit dataChanged(modified);
+}
+
+void DialogView::setupUi()
+{
+    context_menu_ = new QMenu(this);
+    add_ctx_action_ = context_menu_->addAction("Add");
+    add_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("list-add")));
+    context_menu_->addSeparator();
+    copy_ctx_action_ = context_menu_->addAction("Copy");
+    copy_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("edit-copy")));
+    cut_ctx_action_ = context_menu_->addAction("Cut");
+    cut_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("edit-cut")));
+    context_menu_->addSeparator();
+    paste_ctx_action_ = context_menu_->addAction("Paste");
+    paste_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("edit-paste")));
+    paste_link_ctx_action_ = context_menu_->addAction("Paste As Link");
+    paste_link_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("insert-link")));
+    context_menu_->addSeparator();
+    delete_ctx_action_ = context_menu_->addAction("Delete");
+    delete_ctx_action_->setIcon(QIcon::fromTheme(QString::fromUtf8("edit-delete")));
+
+    connect(add_ctx_action_, &QAction::triggered, this, &DialogView::onDialogAddNode);
+    connect(copy_ctx_action_, &QAction::triggered, this, &DialogView::onDialogCopyNode);
+    connect(cut_ctx_action_, &QAction::triggered, this, &DialogView::onDialogCutNode);
+    connect(paste_ctx_action_, &QAction::triggered, this, &DialogView::onDialogPasteNode);
+    connect(paste_link_ctx_action_, &QAction::triggered, this, &DialogView::onDialogPasteLinkNode);
+    connect(delete_ctx_action_, &QAction::triggered, this, &DialogView::onDialogDeleteNode);
+
+    ui->actionsButton->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_code));
+    ui->languageButton->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_language));
+
+    // Action Script
+    connect(ui->actionScript, &QLineEdit::textChanged, this, &DialogView::onActionScriptChanged);
+    connect(ui->actionAnimation, &QComboBox::currentIndexChanged, this, &DialogView::onActionAnimationChanged);
+
+    // Action Param
+    connect(ui->actionParams, &QTableWidget::cellChanged, this, &DialogView::onActionParamCellChanged);
+    ui->actionParamAdd->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_plus, Qt::green));
+    ui->actionParamDel->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_minus, Qt::red));
+    connect(ui->actionParamAdd, &QPushButton::clicked, this, &DialogView::onActionParamAddClicked);
+    connect(ui->actionParamDel, &QPushButton::clicked, this, &DialogView::onActionParamDelClicked);
+
+    // Action Sound
+    connect(ui->actionSound, &QLineEdit::textChanged, this, &DialogView::onActionSoundChanged);
+    connect(ui->actionSoundPlay, &QPushButton::clicked, this, &DialogView::onActionSoundClicked);
+
+    // Condition Script
+    connect(ui->conditionScript, &QLineEdit::textChanged, this, &DialogView::onConditionScriptChanged);
+
+    // Condition Param
+    ui->conditionParamsAdd->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_plus, Qt::green));
+    ui->conditionParamsDel->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_minus, Qt::red));
+    connect(ui->conditionParamsAdd, &QPushButton::clicked, this, &DialogView::onConditionParamAddClicked);
+    connect(ui->conditionParamsDel, &QPushButton::clicked, this, &DialogView::onConditionParamDelClicked);
+    connect(ui->conditionParams, &QTableWidget::cellChanged, this, &DialogView::onConditionParamCellChanged);
+
+    // Dialog Text
+    connect(ui->dialogTextEdit, &QTextEdit::textChanged, this, &DialogView::onDialogTextChanged);
+
+    // Dialog View
+    connect(ui->dialogView, &DialogTreeView::customContextMenuRequested, this, &DialogView::onCustomContextMenu);
+
+    // Speakers table
+    ui->speakersListAdd->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_plus, Qt::green));
+    ui->speakersListDel->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_minus, Qt::red));
+    connect(ui->speakersListAdd, &QPushButton::clicked, this, &DialogView::onSpeakersListAddClicked);
+    connect(ui->speakersListDel, &QPushButton::clicked, this, &DialogView::onSpeakersListDelClicked);
+    connect(ui->speakersTable, &QTableWidget::cellChanged, this, &DialogView::onSpeakerTableCellChanged);
+
+    // DLG wide Settings
+    connect(ui->noZoom, &QCheckBox::stateChanged, this, &DialogView::onNoZoomChanged);
+    connect(ui->abortLineEdit, &QLineEdit::textChanged, this, &DialogView::onAbortScriptChanged);
+    connect(ui->endLineEdit, &QLineEdit::textChanged, this, &DialogView::onEndScriptChanged);
+
+    // Comment
+    connect(ui->commentText, &QTextEdit::textChanged, this, &DialogView::onCommentTextChanged);
+
+    // [TODO] persist these values
+    auto width = qApp->primaryScreen()->geometry().width();
+    auto height = qApp->primaryScreen()->geometry().height();
+    ui->splitter->setSizes(QList<int>() << width * 3 / 4 << width * 1 / 4);
+    ui->splitter_2->setSizes(QList<int>() << height * 3 / 4 << height * 1 / 4);
+
+    QStringList scripts;
+    auto get_scripts = [&scripts](const nw::Resource& res) {
+        // Note: we only care about compiled scripts (for now).
+        if (res.type != nw::ResourceType::ncs) { return; }
+        scripts << QString::fromStdString(res.resref.string());
+    };
+
+    nw::kernel::resman().visit(get_scripts);
+
+    scripts.sort(Qt::CaseInsensitive);
+    script_completer_ = new QCompleter(scripts, this);
+    ui->actionScript->setCompleter(script_completer_);
+    ui->conditionScript->setCompleter(script_completer_);
+    ui->abortLineEdit->setCompleter(script_completer_);
+    ui->endLineEdit->setCompleter(script_completer_);
+
+    QStringList sounds;
+    auto get_sounds = [&sounds](const nw::Resource& res) {
+        if (!nw::ResourceType::check_category(nw::ResourceType::sound, res.type)) { return; }
+        sounds << QString::fromStdString(res.resref.string());
+    };
+
+    nw::kernel::resman().visit(get_sounds);
+    sounds.sort(Qt::CaseInsensitive);
+    sound_completer_ = new QCompleter(sounds, this);
+    ui->actionSound->setCompleter(sound_completer_);
 }
 
 // Slots
