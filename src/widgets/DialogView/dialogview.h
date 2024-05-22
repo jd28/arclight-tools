@@ -29,7 +29,7 @@ class DialogView : public ArclightView {
     Q_OBJECT
 
 public:
-    explicit DialogView(QString path, ArclightPluginInterface* plugin = nullptr, QWidget* parent = nullptr);
+    explicit DialogView(QString path, QWidget* parent = nullptr);
     ~DialogView();
 
     void loadItem(DialogItem* item);

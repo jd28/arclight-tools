@@ -12,8 +12,6 @@ add_library(arclight-widgets STATIC
 
     ArclightView.h
     ArcLightView.cpp
-    ArclightPluginInterface.h
-    ArclightPluginInterface.cpp
 
     TlkSelector/tlkselector.h
     TlkSelector/tlkselector.cpp

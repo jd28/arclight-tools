@@ -24,8 +24,8 @@
 #include <QPushButton>
 #include <QScreen>
 
-DialogView::DialogView(QString path, ArclightPluginInterface* plugin, QWidget* parent)
-    : ArclightView(plugin, parent)
+DialogView::DialogView(QString path, QWidget* parent)
+    : ArclightView(parent)
     , ui(new Ui::DialogView)
     , path_{path}
 {

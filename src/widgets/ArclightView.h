@@ -3,22 +3,18 @@
 
 #include <QWidget>
 
-class ArclightPluginInterface;
-
 /// Arclight View is an abstraction for any widget that is placed in the main window tab.
 class ArclightView : public QWidget {
     Q_OBJECT
 
 public:
-    ArclightView(ArclightPluginInterface* plugin, QWidget* parent = nullptr);
-    ArclightPluginInterface* plugin() const;
+    ArclightView(QWidget* parent = nullptr);
     virtual ~ArclightView() = default;
 
     /// Is view read only
     bool read_only() const;
 
 private:
-    ArclightPluginInterface* plugin_ = nullptr;
     bool read_only_ = false;
 };
 
