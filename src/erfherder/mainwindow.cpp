@@ -108,6 +108,7 @@ void MainWindow::open(const QString& path)
     }
 
     connectModifiedSlots(current()->model());
+    enableModificationMenus(true);
 }
 
 void MainWindow::restoreWindow()
