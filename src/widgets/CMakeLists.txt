@@ -27,6 +27,7 @@ add_subdirectory(CreatureView)
 add_subdirectory(DialogView)
 add_subdirectory(LanguageMenu)
 add_subdirectory(qtpropertybrowser)
+add_subdirectory(renderer)
 add_subdirectory(TlkView)
 
 target_include_directories(arclight-widgets PRIVATE

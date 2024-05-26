@@ -16,16 +16,6 @@ add_library(CreatureView STATIC
     creaturestatsview.ui
     creaturemodelview.h
     creaturemodelview.cpp
-    renderer/shader.cpp
-    renderer/shader.hpp
-    renderer/model.cpp
-    renderer/model.hpp
-    renderer/ModelCache.cpp
-    renderer/ModelCache.hpp
-    renderer/TextureCache.cpp
-    renderer/TextureCache.hpp
-    renderer/util.cpp
-    renderer/util.hpp
     creatureappearanceview.h
     creatureappearanceview.cpp
     creatureappearanceview.ui
@@ -53,4 +43,5 @@ target_link_libraries(CreatureView PRIVATE
     Qt6::OpenGL
     Qt6::OpenGLWidgets
     nw
+    renderer    
 )
