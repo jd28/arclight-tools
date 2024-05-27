@@ -6,6 +6,8 @@ add_library(renderer STATIC
     shader.hpp
     model.cpp
     model.hpp
+    modelview.cpp
+    modelview.h
     TextureCache.cpp
     TextureCache.hpp
     util.cpp
