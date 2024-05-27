@@ -260,12 +260,14 @@ void ModelView::paintGL()
 
 void ModelView::moveCameraForward()
 {
-    cameraPosition += glm::vec3(0.0f, 0.0f, -1.0f) * movementSpeed;
+    glm::vec3 forward = glm::normalize(glm::vec3(1.0f, 0.0f, 1.0f) * cameraFront);
+    cameraPosition = cameraPosition + forward * movementSpeed;
 }
 
 void ModelView::moveCameraBackward()
 {
-    cameraPosition -= glm::vec3(0.0f, 0.0f, -1.0f) * movementSpeed;
+    glm::vec3 forward = glm::normalize(glm::vec3(1.0f, 0.0f, 1.0f) * cameraFront);
+    cameraPosition = cameraPosition - forward * movementSpeed;
 }
 
 void ModelView::moveCameraLeft()

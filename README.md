@@ -69,7 +69,13 @@ Features:
 
 ### Area View
 
-A view for NWN areas. *Extremely* basic.  Terrible camera.  But a start.
+A view for NWN areas. *Extremely* basic, but a start.
+
+Camera Controls:
+* WASD for movement.
+* Up and Down arrow for height.
+* Ctrl+Up and Ctrl+Down for pitch.
+* Right and Left arrow for yaw.
 
 ![area](screenshots/area-view.png)
 
