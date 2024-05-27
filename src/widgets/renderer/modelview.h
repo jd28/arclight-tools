@@ -71,6 +71,8 @@ private:
     // Camera control functions
     void moveCameraForward();
     void moveCameraBackward();
+    void moveCameraLeft();
+    void moveCameraRight();
     void moveCameraUp();
     void moveCameraDown();
     void yawCameraLeft();
