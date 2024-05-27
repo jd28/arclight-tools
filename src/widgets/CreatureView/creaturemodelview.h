@@ -1,8 +1,6 @@
 #ifndef CREATUREMODELVIEW_H
 #define CREATUREMODELVIEW_H
 
-#include "../renderer/ModelCache.hpp"
-#include "../renderer/TextureCache.hpp"
 #include "../renderer/model.hpp"
 #include "../renderer/shader.hpp"
 

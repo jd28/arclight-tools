@@ -1,8 +1,9 @@
 #include "creaturemodelview.h"
 
+#include "../renderer/TextureCache.hpp"
+
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
-#include "glm/glm.hpp"
 
 #include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Creature.hpp"
@@ -13,7 +14,6 @@
 #include <QTimer>
 #include <QWheelEvent>
 
-ModelCache s_models;
 TextureCache s_textures;
 
 CreatureModelView::CreatureModelView(QWidget* parent)
@@ -168,7 +168,8 @@ void CreatureModelView::setCreature(nw::Creature* creature)
         current_model_.reset();
     } else {
         nw::Resref resref{model};
-        current_model_ = s_models.load(resref.view(), funcs_);
+
+        current_model_ = load_model(resref.view(), funcs_);
         if (!current_model_->load_animation("pause1")) {
             current_model_->load_animation("cpause1");
         }

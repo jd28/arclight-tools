@@ -102,6 +102,7 @@ private:
 
 struct PartsModel {
     PartsModel(nw::BodyParts parts);
+std::unique_ptr<Model> load_model(std::string_view resref, QOpenGLFunctions_3_3_Core* gl);
 
     nw::BodyParts parts_;
 };

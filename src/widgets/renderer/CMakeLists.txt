@@ -6,8 +6,6 @@ add_library(renderer STATIC
     shader.hpp
     model.cpp
     model.hpp
-    ModelCache.cpp
-    ModelCache.hpp
     TextureCache.cpp
     TextureCache.hpp
     util.cpp
@@ -35,5 +33,4 @@ target_link_libraries(renderer PRIVATE
     Qt6::Gui
     Qt6::OpenGL
     Qt6::OpenGLWidgets
-    nw
 )

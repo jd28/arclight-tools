@@ -3,6 +3,8 @@
 #include "TextureCache.hpp"
 #include "shader.hpp"
 
+#include "nw/formats/Tileset.hpp"
+#include "nw/kernel/ModelCache.hpp"
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -440,4 +442,17 @@ void Model::update(int32_t dt)
             }
         }
     }
+}
+
+std::unique_ptr<Model> load_model(std::string_view resref, QOpenGLFunctions_3_3_Core* gl)
+{
+    auto model = nw::kernel::models().load(resref);
+    if (!model) { return {}; }
+
+    auto mdl = std::make_unique<Model>();
+    if (!mdl->load(&model->model, gl)) {
+        LOG_F(ERROR, "Failed to load model: {}", resref);
+        return {};
+    }
+    return std::move(mdl);
 }
