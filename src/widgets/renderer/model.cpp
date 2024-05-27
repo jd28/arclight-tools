@@ -5,6 +5,8 @@
 
 #include "nw/formats/Tileset.hpp"
 #include "nw/kernel/ModelCache.hpp"
+#include "nw/objects/Area.hpp"
+
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -455,4 +457,49 @@ std::unique_ptr<Model> load_model(std::string_view resref, QOpenGLFunctions_3_3_
         return {};
     }
     return std::move(mdl);
+}
+
+// == BasicTileArea ===========================================================
+// ============================================================================
+
+BasicTileArea::BasicTileArea(nw::Area* area)
+    : area_{area}
+{
+}
+
+void BasicTileArea::draw(ShaderPrograms& shader, const glm::mat4x4& mtx, QOpenGLFunctions_3_3_Core* gl)
+{
+    for (const auto& tile : tile_models_) {
+        auto trans = glm::translate(mtx, tile->position_);
+        trans = trans * glm::toMat4(tile->rotation_);
+        trans = glm::scale(trans, tile->scale_);
+
+        tile->draw(shader, trans, gl);
+    }
+}
+
+void BasicTileArea::load_tile_models(QOpenGLFunctions_3_3_Core* gl)
+{
+    for (size_t h = 0; h < static_cast<size_t>(area_->height); ++h) {
+        for (size_t w = 0; w < static_cast<size_t>(area_->width); ++w) {
+            auto idx = h * area_->width + w;
+            const auto& at = area_->tiles[idx];
+            auto mdl = load_model(area_->tileset->tiles.at(at.id).model, gl);
+
+            auto x = w * 10.0f + 5.0f;
+            auto y = h * 10.0f + 5.0f;
+            auto z = at.height * area_->tileset->tile_height;
+            mdl->position_ = glm::vec3(x, y, z);
+            mdl->rotation_ = glm::angleAxis(glm::radians(at.orientation * 90.0f), glm::vec3{0.0f, 0.0f, 1.0f});
+
+            tile_models_.push_back(std::move(mdl));
+        }
+    }
+}
+
+void BasicTileArea::update(int32_t dt)
+{
+    for (const auto& tile : tile_models_) {
+        tile->update(dt);
+    }
 }

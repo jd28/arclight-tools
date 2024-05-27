@@ -19,6 +19,10 @@
 struct ShaderPrograms;
 struct Model;
 
+namespace nw {
+struct Area;
+} // namespace nw
+
 struct Node {
     virtual ~Node() = default;
 
@@ -100,9 +104,21 @@ private:
     Node* load_node(nw::model::Node* node, QOpenGLFunctions_3_3_Core* gl, Node* parent = nullptr);
 };
 
-struct PartsModel {
-    PartsModel(nw::BodyParts parts);
 std::unique_ptr<Model> load_model(std::string_view resref, QOpenGLFunctions_3_3_Core* gl);
 
-    nw::BodyParts parts_;
+// == BasicTileArea ===========================================================
+// ============================================================================
+
+class BasicTileArea : public Node {
+public:
+    BasicTileArea(nw::Area* area);
+
+    virtual void draw(ShaderPrograms& shader, const glm::mat4x4& mtx, QOpenGLFunctions_3_3_Core* gl) override;
+    void load_tile_models(QOpenGLFunctions_3_3_Core* gl);
+
+    /// Updates the animimation by ``dt`` milliseconds.
+    void update(int32_t dt);
+
+    nw::Area* area_ = nullptr;
+    std::vector<std::unique_ptr<Model>> tile_models_;
 };
