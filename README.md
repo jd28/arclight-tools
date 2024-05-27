@@ -61,10 +61,17 @@ Features:
 * Basic Meshses
 * Skin Meshes
 * Un-lerped Animations
+* Very basic area viewing
 
 -----------------------------------------------------------------------------
 
 ## The Widgets
+
+### Area View
+
+A view for NWN areas. *Extremely* basic.  Terrible camera.  But a start.
+
+![area](screenshots/area-view.png)
 
 ### Container View
 

@@ -27,6 +27,7 @@ add_library(arclight-widgets STATIC
     projectmodel.cpp
 )
 
+add_subdirectory(AreaView)
 add_subdirectory(ContainerView)
 add_subdirectory(CreatureView)
 add_subdirectory(DialogView)
