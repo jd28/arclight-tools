@@ -20,6 +20,11 @@ add_library(arclight-widgets STATIC
     util/restypeicons.cpp
     checkboxdelegate.h
     checkboxdelegate.cpp
+    projectview.h
+    projectview.cpp
+    projectview.ui
+    projectmodel.h
+    projectmodel.cpp
 )
 
 add_subdirectory(ContainerView)
