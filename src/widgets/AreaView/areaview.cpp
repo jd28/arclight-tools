@@ -24,4 +24,5 @@ void AreaView::load_model()
     area_model_ = new BasicTileArea(area_);
     area_model_->load_tile_models(ui->openGLWidget->funcs());
     ui->openGLWidget->setNode(area_model_);
+    ui->openGLWidget->setFocus();
 }

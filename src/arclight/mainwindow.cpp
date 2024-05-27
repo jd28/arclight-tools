@@ -99,5 +99,6 @@ void MainWindow::onProjectDoubleClicked(ProjectItem* item)
         ui->tabWidget->setTabsClosable(true);
         ui->tabWidget->setCurrentIndex(idx);
         av->load_model();
+        av->setFocus();
     }
 }

@@ -19,9 +19,18 @@ public:
     ModelView(QWidget* parent = nullptr);
     void setNode(Node* node);
 
-    void mousePressEvent(QMouseEvent* event) override;
-    void mouseMoveEvent(QMouseEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
+
+    void focusInEvent(QFocusEvent* event) override
+    {
+        QOpenGLWidget::focusInEvent(event);
+    }
+
+    void focusOutEvent(QFocusEvent* event) override
+    {
+        QOpenGLWidget::focusOutEvent(event);
+    }
 
     void onDataChanged();
 
@@ -46,9 +55,29 @@ private:
     float height_;
     float width_;
     QPoint last_pos_;
-    double azimuth_;
-    double declination_;
-    double distance_;
+
+    // Camera parameters
+    glm::vec3 cameraPosition{0.0f, 45.0f, 0.0f};
+    glm::vec3 cameraFront;
+    glm::vec3 cameraUp;
+    glm::vec3 cameraRight;
+    float yaw = 0.0f;
+    float pitch = 9.0f;
+
+    // Camera movement and rotation speeds
+    float movementSpeed;
+    float rotationSpeed;
+
+    // Camera control functions
+    void moveCameraForward();
+    void moveCameraBackward();
+    void moveCameraUp();
+    void moveCameraDown();
+    void yawCameraLeft();
+    void yawCameraRight();
+    void increasePitch();
+    void decreasePitch();
+    void updateCameraVectors();
 };
 
 #endif // MODELVIEW_H

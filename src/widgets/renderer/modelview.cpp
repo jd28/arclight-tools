@@ -20,10 +20,7 @@ ModelView::ModelView(QWidget* parent)
     fmt.setVersion(3, 3);
     fmt.setProfile(QSurfaceFormat::CoreProfile);
     setFormat(fmt);
-
-    azimuth_ = 0.0f;     // Start facing the positive X axis
-    declination_ = 0.0f; // Start looking straight ahead
-    distance_ = 8.0f;    // Start 3 units away from the origin
+    setFocusPolicy(Qt::StrongFocus);
 
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &ModelView::onUpdateModelAnimation);
@@ -138,6 +135,18 @@ void ModelView::initializeGL()
         })",
         funcs_);
 
+    // Initialize camera parameters
+    cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f);
+    cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+    cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    cameraRight = glm::vec3(1.0f, 0.0f, 0.0f);
+    yaw = -90.0f;
+    pitch = 0.0f;
+
+    // Set camera movement and rotation speeds
+    movementSpeed = 0.15f;
+    rotationSpeed = 0.5f;
+
     emit initialized();
 }
 
@@ -152,30 +161,64 @@ void ModelView::resizeGL(int w, int h)
     width_ = float(w);
 }
 
-void ModelView::mousePressEvent(QMouseEvent* event)
+void ModelView::keyPressEvent(QKeyEvent* event)
 {
-    if (event->button() == Qt::LeftButton) {
-        last_pos_ = event->pos();
-    }
-}
+    Qt::KeyboardModifiers modifiers = event->modifiers();
 
-void ModelView::mouseMoveEvent(QMouseEvent* event)
-{
-    if (event->buttons() & Qt::LeftButton) {
-        int dx = event->position().x() - last_pos_.x();
-        int dy = event->position().y() - last_pos_.y();
-        azimuth_ -= dx * 0.5 * 0.01;
-        declination_ += dy * 0.5 * 0.01;
-        last_pos_ = event->pos();
-        update();
+    switch (event->key()) {
+    case Qt::Key_W:
+        moveCameraForward();
+        break;
+    case Qt::Key_S:
+        moveCameraBackward();
+        break;
+    case Qt::Key_A:
+        moveCameraLeft();
+        break;
+    case Qt::Key_D:
+        moveCameraRight();
+        break;
+    case Qt::Key_Left:
+        yawCameraLeft();
+        break;
+    case Qt::Key_Right:
+        yawCameraRight();
+        break;
     }
+
+    // Handle pitch control (Ctrl + Up/Down Arrow)
+    if (modifiers & Qt::ControlModifier) {
+        switch (event->key()) {
+        case Qt::Key_Up:
+            increasePitch();
+            break;
+        case Qt::Key_Down:
+            decreasePitch();
+            break;
+        }
+    } else {
+        switch (event->key()) {
+        case Qt::Key_Up:
+            moveCameraUp();
+            break;
+        case Qt::Key_Down:
+            moveCameraDown();
+            break;
+        }
+    }
+
+    LOG_F(INFO, "cameraPosition: {} {} {}", cameraPosition.x, cameraPosition.y, cameraPosition.z);
+
+    update();
 }
 
 void ModelView::wheelEvent(QWheelEvent* event)
 {
-    int num_degrees = event->angleDelta().y() / 8;
-    int num_steps = num_degrees / 15;
-    distance_ += num_steps;
+    if (event->angleDelta().y() > 0) {
+        cameraPosition += cameraFront * movementSpeed;
+    } else {
+        cameraPosition -= cameraFront * movementSpeed;
+    }
     update();
 }
 
@@ -186,10 +229,8 @@ void ModelView::paintGL()
     gl->glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
     if (node_) {
-        GLfloat camX = distance_ * sin(azimuth_) * cos(declination_);
-        GLfloat camY = distance_ * sin(declination_);
-        GLfloat camZ = distance_ * cos(azimuth_) * cos(declination_);
-        auto view = glm::lookAt(glm::vec3{camX, camY, camZ}, glm::vec3{0, 0, 0}, glm::vec3{0, 1, 0});
+        glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+
         float aspect = width_ / height_;
         auto proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
 
@@ -211,8 +252,75 @@ void ModelView::paintGL()
 
         glm::mat4 mtx = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), {0.0f, 0.0f, 1.0f});
         mtx = glm::rotate(mtx, glm::radians(90.0f), {1.0f, 0.0f, 0.0f});
-        mtx = glm::translate(mtx, {0.0f, 1.0f, -2.0f});
+
         node_->draw(shader_, mtx, gl);
         gl->glUseProgram(0);
     }
+}
+
+void ModelView::moveCameraForward()
+{
+    cameraPosition += glm::vec3(0.0f, 0.0f, -1.0f) * movementSpeed;
+}
+
+void ModelView::moveCameraBackward()
+{
+    cameraPosition -= glm::vec3(0.0f, 0.0f, -1.0f) * movementSpeed;
+}
+
+void ModelView::moveCameraLeft()
+{
+    cameraPosition -= glm::normalize(glm::cross(cameraFront, cameraUp)) * movementSpeed;
+}
+
+void ModelView::moveCameraRight()
+{
+    cameraPosition += glm::normalize(glm::cross(cameraFront, cameraUp)) * movementSpeed;
+}
+
+void ModelView::moveCameraUp()
+{
+    cameraPosition += cameraUp * movementSpeed;
+}
+
+void ModelView::moveCameraDown()
+{
+    cameraPosition -= cameraUp * movementSpeed;
+}
+
+void ModelView::yawCameraLeft()
+{
+    yaw -= rotationSpeed;
+    updateCameraVectors();
+}
+
+void ModelView::yawCameraRight()
+{
+    yaw += rotationSpeed;
+    updateCameraVectors();
+}
+
+void ModelView::increasePitch()
+{
+    pitch += rotationSpeed;
+    if (pitch > 89.0f) pitch = 89.0f;
+    updateCameraVectors();
+}
+
+void ModelView::decreasePitch()
+{
+    pitch -= rotationSpeed;
+    if (pitch < -89.0f) pitch = -89.0f;
+    updateCameraVectors();
+}
+
+void ModelView::updateCameraVectors()
+{
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(front);
+
+    cameraRight = glm::normalize(glm::cross(cameraFront, cameraUp));
 }
