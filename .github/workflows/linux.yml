@@ -52,7 +52,7 @@ jobs:
             libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync0-dev \
             libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev \
             libxcb-render-util0-dev libxcb-xinerama0-dev libxcb-xkb-dev libxcb-xinput-dev libkrb5-dev \
-            libxcb-res0-dev python3-setuptools python3-mako python3-pip
+            libxcb-res0-dev python3-setuptools python3-mako python3-pip libxcb-cursor0
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 --slave /usr/bin/gcov gcov /usr/bin/gcov-11
 
       # Install latest CMake.
