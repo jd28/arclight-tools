@@ -20,9 +20,9 @@ AreaView::~AreaView()
 
 void AreaView::load_model()
 {
+    ui->openGLWidget->setFocus(Qt::ActiveWindowFocusReason);
     ui->openGLWidget->makeCurrent();
     area_model_ = new BasicTileArea(area_);
     area_model_->load_tile_models(ui->openGLWidget->funcs());
     ui->openGLWidget->setNode(area_model_);
-    ui->openGLWidget->setFocus(Qt::ActiveWindowFocusReason);
 }

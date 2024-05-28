@@ -20,16 +20,17 @@ ModelView::ModelView(QWidget* parent)
     fmt.setVersion(3, 3);
     fmt.setProfile(QSurfaceFormat::CoreProfile);
     setFormat(fmt);
-    setFocusPolicy(Qt::StrongFocus);
 
-    QTimer* timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &ModelView::onUpdateModelAnimation);
-    timer->start(16);
+    // QTimer* timer = new QTimer(this);
+    // connect(timer, &QTimer::timeout, this, &ModelView::onUpdateModelAnimation);
+    // timer->start(16);
 }
 
 void ModelView::setNode(Node* node)
 {
     node_ = node;
+    setFocus();
+    makeCurrent();
     update();
 }
 
@@ -136,22 +137,24 @@ void ModelView::initializeGL()
         funcs_);
 
     // Initialize camera parameters
-    cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f);
-    cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+    cameraPosition = glm::vec3(0.0f, 50.0f, 3.0f);
+    cameraFront = glm::vec3(0.0f, 0.0f, 1.0f);
     cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
     cameraRight = glm::vec3(1.0f, 0.0f, 0.0f);
     yaw = -90.0f;
-    pitch = 0.0f;
+    pitch = -89.0f;
+    updateCameraVectors();
 
     // Set camera movement and rotation speeds
-    movementSpeed = 0.15f;
-    rotationSpeed = 0.5f;
+    movementSpeed = 0.5f;
+    rotationSpeed = 1.0f;
 
     emit initialized();
 }
 
 void ModelView::onUpdateModelAnimation()
 {
+    update();
 }
 
 void ModelView::resizeGL(int w, int h)
