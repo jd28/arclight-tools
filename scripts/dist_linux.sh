@@ -21,6 +21,7 @@ wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/cont
 chmod a+x linuxdeploy-plugin-qt-x86_64.AppImage
 
 mkdir -p AppDir/usr/bin
-cp bin/arclight AppDir/usr/bin/
+mv bin/arclight AppDir/usr/bin/
 
 ./linuxdeploy-x86_64.AppImage --appdir AppDir -d share/arclight.desktop -i share/arclight.png --plugin qt --output appimage
+mv arclight-x86_64.AppImage bin/
