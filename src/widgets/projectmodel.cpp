@@ -1,5 +1,6 @@
 #include "projectmodel.h"
 
+#include "nw/kernel/Resources.hpp"
 #include "nw/kernel/Strings.hpp"
 #include "nw/objects/Area.hpp"
 #include "nw/objects/Module.hpp"
@@ -23,6 +24,14 @@ ProjectItem::ProjectItem(nw::Area* area, ProjectItemType type, ProjectItem* pare
     , area_(area)
     , type_{type}
 {
+}
+
+ProjectItem::ProjectItem(nw::Resource res, ProjectItemType type, ProjectItem* parent)
+    : AbstractTreeItem(0, parent)
+    , res_(res)
+    , type_{type}
+{
+    path_ = QString::fromStdString(res_.resref.string());
 }
 
 QVariant ProjectItem::data(int column) const
@@ -65,12 +74,23 @@ QVariant ProjectModel::data(const QModelIndex& index, int role) const
 
 void ProjectModel::loadRootItems()
 {
-    auto areas = new ProjectItem("Areas", ProjectItemType::folder);
+    auto areas = new ProjectItem("Areas", ProjectItemType::category);
     addRootItem(areas);
     for (size_t i = 0; i < module_->area_count(); ++i) {
-        auto it = new ProjectItem(module_->get_area(i), ProjectItemType::resource);
+        auto it = new ProjectItem(module_->get_area(i), ProjectItemType::area, areas);
         areas->appendChild(it);
     }
+
+    auto dialogs = new ProjectItem("Dialogs", ProjectItemType::category);
+    addRootItem(dialogs);
+    auto mod = nw::kernel::resman().module_container();
+
+    auto dlg_getter = [dialogs](const nw::Resource& res) {
+        auto it = new ProjectItem(res, ProjectItemType::dialog, dialogs);
+        dialogs->appendChild(it);
+    };
+
+    mod->visit(dlg_getter, {nw::ResourceType::dlg});
 }
 
 // == ProjectSortFilterProxyModel =============================================

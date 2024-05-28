@@ -3,6 +3,8 @@
 
 #include "AbstractTreeModel.hpp"
 
+#include "nw/resources/Resource.hpp"
+
 #include <QSortFilterProxyModel>
 
 namespace nw {
@@ -11,8 +13,9 @@ struct Module;
 }
 
 enum struct ProjectItemType {
-    folder,
-    resource,
+    category,
+    area,
+    dialog,
 };
 
 // == ProjectItem =============================================================
@@ -22,11 +25,13 @@ class ProjectItem : public AbstractTreeItem {
 public:
     ProjectItem(nw::Area* area, ProjectItemType type, ProjectItem* parent = nullptr);
     ProjectItem(QString name, ProjectItemType type, ProjectItem* parent = nullptr);
+    ProjectItem(nw::Resource res, ProjectItemType type, ProjectItem* parent);
 
     virtual QVariant data(int column) const override;
 
     nw::Area* area_ = nullptr;
     QString path_;
+    nw::Resource res_;
     ProjectItemType type_;
 };
 

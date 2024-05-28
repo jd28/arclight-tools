@@ -93,12 +93,28 @@ void MainWindow::onProjectDoubleClicked(ProjectItem* item)
 {
     if (!item) { return; }
 
-    if (item->area_) {
+    if (item->type_ == ProjectItemType::area) {
         auto av = new AreaView(item->area_, ui->tabWidget);
         auto idx = ui->tabWidget->addTab(av, item->data(0).toString());
         ui->tabWidget->setTabsClosable(true);
         ui->tabWidget->setCurrentIndex(idx);
         av->load_model();
+    } else if (item->type_ == ProjectItemType::dialog) {
+        auto data = nw::kernel::resman().demand(item->res_);
+        if (data.bytes.size() == 0) { return; }
+        nw::Gff gff{std::move(data)};
+        if (!gff.valid()) { return; }
+
+        auto dlg = new nw::Dialog(gff.toplevel());
+        if (!dlg->valid()) {
+            delete dlg;
+            return;
+        }
+
+        auto av = new DialogView(dlg, ui->tabWidget);
+        auto idx = ui->tabWidget->addTab(av, item->data(0).toString());
+        ui->tabWidget->setTabsClosable(true);
+        ui->tabWidget->setCurrentIndex(idx);
         av->setFocus();
     }
 }
