@@ -16,6 +16,7 @@ class QAudioOutput;
 class QCompleter;
 class QItemSelection;
 class QMediaPlayer;
+class QMenu;
 
 namespace Ui {
 class DialogView;
