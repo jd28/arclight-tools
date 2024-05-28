@@ -32,6 +32,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(ui->project, &ProjectView::doubleClicked, this, &MainWindow::onProjectDoubleClicked);
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpen);
+
+    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::onTabCloseRequested);
 }
 
 MainWindow::~MainWindow()
@@ -117,4 +119,11 @@ void MainWindow::onProjectDoubleClicked(ProjectItem* item)
         ui->tabWidget->setCurrentIndex(idx);
         av->setFocus();
     }
+}
+
+void MainWindow::onTabCloseRequested(int index)
+{
+    auto cw = reinterpret_cast<ArclightView*>(ui->tabWidget->widget(index));
+    ui->tabWidget->removeTab(index);
+    delete cw;
 }

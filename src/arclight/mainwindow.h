@@ -37,6 +37,7 @@ public:
 public slots:
     void onActionOpen(bool checked = false);
     void onProjectDoubleClicked(ProjectItem* item);
+    void onTabCloseRequested(int index);
 
 private:
     Ui::MainWindow *ui;
