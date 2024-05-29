@@ -22,9 +22,10 @@ add_library(arclight-widgets STATIC
     checkboxdelegate.cpp
     projectview.h
     projectview.cpp
-    projectview.ui
-    projectmodel.h
-    projectmodel.cpp
+    filesystemview.h
+    filesystemview.cpp
+    proxymodels.h
+    proxymodels.cpp
 )
 
 add_subdirectory(AreaView)

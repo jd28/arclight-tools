@@ -74,18 +74,26 @@
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QVBoxLayout" name="projectLayout">
      <item>
       <widget class="QComboBox" name="projectComboBox">
-       <item>
-        <property name="text">
-         <string>Project</string>
-        </property>
-       </item>
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
      <item>
-      <widget class="ProjectView" name="project" native="true"/>
+      <widget class="QLineEdit" name="filter">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="placeholderText">
+        <string>Filter</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTreeView" name="placeHolder"/>
      </item>
     </layout>
    </widget>
@@ -127,14 +135,6 @@
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>ProjectView</class>
-   <extends>QWidget</extends>
-   <header>../widgets/projectview.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

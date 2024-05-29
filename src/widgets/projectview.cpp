@@ -100,6 +100,8 @@ void ProjectModel::loadRootItems()
 ProjectView::ProjectView(QWidget* parent)
     : QTreeView(parent)
 {
+    setHeaderHidden(true);
+
     connect(this, &QTreeView::doubleClicked, this, &ProjectView::onDoubleClicked);
 }
 

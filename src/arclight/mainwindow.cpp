@@ -7,7 +7,8 @@
 #include "DialogView/dialogview.h"
 #include "LanguageMenu/LanguageMenu.h"
 #include "widgets/ArclightView.h"
-#include "widgets/projectmodel.h"
+#include "widgets/filesystemview.h"
+#include "widgets/projectview.h"
 
 #include "nw/formats/Dialog.hpp"
 #include "nw/kernel/Resources.hpp"
@@ -18,6 +19,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QPluginLoader>
+#include <QTreeView>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -30,10 +32,12 @@ MainWindow::MainWindow(QWidget* parent)
 
     loadCallbacks();
 
-    connect(ui->project, &ProjectView::doubleClicked, this, &MainWindow::onProjectDoubleClicked);
-    connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpen);
+    ui->projectComboBox->addItem("Project", 0);
+    ui->projectComboBox->addItem("File System", 1);
 
+    connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpen);
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::onTabCloseRequested);
+    connect(ui->projectComboBox, &QComboBox::currentIndexChanged, this, &MainWindow::onProjectViewChanged);
 }
 
 MainWindow::~MainWindow()
@@ -87,8 +91,27 @@ void MainWindow::onActionOpen(bool checked)
     auto path = QFileDialog::getOpenFileName(this, "Open Project", "", "Module (*.ifo *.ifo.json)");
     if (path.isEmpty()) { return; }
     QFileInfo fi(path);
+
+    ui->placeHolder->setHidden(true);
+
+    auto project_view = new ProjectView(this);
     module_ = nw::kernel::load_module(fi.absolutePath().toStdString());
-    ui->project->load(module_, fi.absolutePath());
+    project_view->load(module_, fi.absolutePath());
+
+    project_treeviews_.push_back(project_view);
+    ui->projectLayout->addWidget(project_view);
+    connect(project_view, &ProjectView::doubleClicked, this, &MainWindow::onProjectDoubleClicked);
+    connect(ui->filter, &QLineEdit::textChanged, project_view->filter_, &FuzzyProxyModel::onFilterChanged);
+
+    auto filesystem_view = new FileSystemView(fi.absolutePath(), this);
+    filesystem_view->setHidden(true);
+    project_treeviews_.push_back(filesystem_view);
+    ui->projectLayout->addWidget(filesystem_view);
+    connect(ui->filter, &QLineEdit::textChanged, filesystem_view->proxy_, &FuzzyProxyModel::onFilterChanged);
+
+    ui->projectComboBox->setEnabled(true);
+    ui->projectComboBox->setCurrentIndex(0);
+    ui->filter->setEnabled(true);
 }
 
 void MainWindow::onProjectDoubleClicked(ProjectItem* item)
@@ -102,9 +125,9 @@ void MainWindow::onProjectDoubleClicked(ProjectItem* item)
         ui->tabWidget->setCurrentIndex(idx);
         av->load_model();
     } else if (item->type_ == ProjectItemType::dialog) {
-        auto data = nw::kernel::resman().demand(item->res_);
-        if (data.bytes.size() == 0) { return; }
-        nw::Gff gff{std::move(data)};
+        auto rd = nw::kernel::resman().demand(item->res_);
+        if (rd.bytes.size() == 0) { return; }
+        nw::Gff gff{std::move(rd)};
         if (!gff.valid()) { return; }
 
         auto dlg = new nw::Dialog(gff.toplevel());
@@ -119,6 +142,17 @@ void MainWindow::onProjectDoubleClicked(ProjectItem* item)
         ui->tabWidget->setCurrentIndex(idx);
         av->setFocus();
     }
+}
+
+void MainWindow::onProjectViewChanged(int index)
+{
+    auto variant = ui->projectComboBox->itemData(index);
+    if (variant.isNull()) { return; }
+    int view = variant.toInt();
+    for (int i = 0; i < project_treeviews_.size(); ++i) {
+        project_treeviews_[i]->setHidden(view != i);
+    }
+    ui->filter->clear();
 }
 
 void MainWindow::onTabCloseRequested(int index)

@@ -13,6 +13,8 @@ class ArclightView;
 class PluginInfoDialog;
 class ProjectItem;
 
+class QTreeView;
+
 namespace nw {
 struct Module;
 }
@@ -38,12 +40,14 @@ public slots:
     void onActionOpen(bool checked = false);
     void onProjectDoubleClicked(ProjectItem* item);
     void onTabCloseRequested(int index);
+    void onProjectViewChanged(int index);
 
 private:
     Ui::MainWindow *ui;
     nw::Module* module_ = nullptr;
     absl::flat_hash_map<QString, ExtensionCallback> ext_to_view_;
     absl::flat_hash_map<nw::ResourceType::type, ResourceCallback> type_to_view_;
+    QList<QTreeView*> project_treeviews_;
 };
 
 #endif // MAINWINDOW_H
