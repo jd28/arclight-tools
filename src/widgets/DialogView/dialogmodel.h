@@ -20,7 +20,7 @@ class DialogModel;
 struct DialogItem : public AbstractTreeItem {
     DialogItem(nw::DialogPtr* ptr, int row, DialogModel* model, AbstractTreeItem* parent = nullptr);
 
-    QVariant data(int column) const override;
+    QVariant data(int column, int role = Qt::DisplayRole) const override;
 
     nw::DialogPtr* ptr_ = nullptr;
     DialogModel* model_ = nullptr;

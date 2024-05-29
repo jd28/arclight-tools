@@ -34,7 +34,7 @@ ProjectItem::ProjectItem(nw::Resource res, ProjectItemType type, ProjectItem* pa
     path_ = QString::fromStdString(res_.resref.string());
 }
 
-QVariant ProjectItem::data(int column) const
+QVariant ProjectItem::data(int column, int role) const
 {
     if (column != 0) { return {}; }
     if (!path_.isEmpty()) {

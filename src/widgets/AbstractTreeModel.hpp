@@ -23,7 +23,7 @@ public:
 
     AbstractTreeItem* child(int row) { return children_[row]; }
     int childCount() const { return int(children_.size()); }
-    virtual QVariant data(int column) const = 0;
+    virtual QVariant data(int column, int role = Qt::DisplayRole) const = 0;
     int row() const { return row_; }
     AbstractTreeItem* parent() { return parent_; }
     void refreshChildRows();

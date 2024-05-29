@@ -27,7 +27,7 @@ public:
     ProjectItem(QString name, ProjectItemType type, ProjectItem* parent = nullptr);
     ProjectItem(nw::Resource res, ProjectItemType type, ProjectItem* parent);
 
-    virtual QVariant data(int column) const override;
+    virtual QVariant data(int column, int role = Qt::DisplayRole) const override;
 
     nw::Area* area_ = nullptr;
     QString path_;

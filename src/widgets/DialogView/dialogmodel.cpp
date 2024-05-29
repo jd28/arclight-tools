@@ -27,8 +27,9 @@ DialogItem::DialogItem(nw::DialogPtr* ptr, int row, DialogModel* model, Abstract
     }
 }
 
-QVariant DialogItem::data(int column) const
+QVariant DialogItem::data(int column, int role) const
 {
+    Q_UNUSED(role);
     if (!ptr_) { return "Root"; }
     nw::DialogNode* n = ptr_->node;
     switch (column) {
