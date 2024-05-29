@@ -2,6 +2,7 @@
 #include "ui_projectview.h"
 
 #include "projectmodel.h"
+#include "proxymodels.h"
 
 ProjectView::ProjectView(QWidget* parent)
     : QWidget(parent)
@@ -23,10 +24,14 @@ void ProjectView::load(nw::Module* module, QString path)
     path_ = std::move(path);
     model_ = new ProjectModel(module_, path_, this);
     model_->loadRootItems();
-    filter_ = new ProjectSortFilterProxyModel(this);
+
+    filter_ = new FuzzyProxyModel(this);
     filter_->setRecursiveFilteringEnabled(true);
     filter_->setSourceModel(model_);
     filter_->sort(0);
+
+    connect(ui->filter, &QLineEdit::textChanged, filter_, &FuzzyProxyModel::onFilterChanged);
+
     ui->projectTree->setModel(filter_);
     ui->projectTree->expandRecursively(filter_->index(0, 0));
 }

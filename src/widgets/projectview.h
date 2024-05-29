@@ -5,7 +5,7 @@
 
 class ProjectItem;
 class ProjectModel;
-class ProjectSortFilterProxyModel;
+class FuzzyProxyModel;
 
 namespace nw {
 struct Module;
@@ -35,7 +35,7 @@ private:
     nw::Module* module_ = nullptr;
     QString path_;
     ProjectModel* model_ = nullptr;
-    ProjectSortFilterProxyModel* filter_ = nullptr;
+    FuzzyProxyModel* filter_ = nullptr;
 };
 
 #endif // PROJECTVIEW_H

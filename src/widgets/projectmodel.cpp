@@ -92,22 +92,3 @@ void ProjectModel::loadRootItems()
 
     mod->visit(dlg_getter, {nw::ResourceType::dlg});
 }
-
-// == ProjectSortFilterProxyModel =============================================
-// ============================================================================
-
-ProjectSortFilterProxyModel::ProjectSortFilterProxyModel(QObject* parent)
-    : QSortFilterProxyModel(parent)
-{
-}
-
-bool ProjectSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
-{
-    return true;
-}
-
-// bool ProjectSortFilterProxyModel::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
-// {
-
-//     return true;
-// }
