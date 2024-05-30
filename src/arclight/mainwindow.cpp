@@ -1,11 +1,12 @@
 #include "mainwindow.h"
-#include "DialogView/dialogmodel.h"
 #include "ui_mainwindow.h"
 
 #include "AreaView/areaview.h"
 #include "CreatureView/creatureview.h"
+#include "DialogView/dialogmodel.h"
 #include "DialogView/dialogview.h"
 #include "LanguageMenu/LanguageMenu.h"
+#include "explorerview.h"
 #include "widgets/ArclightView.h"
 #include "widgets/filesystemview.h"
 #include "widgets/projectview.h"
@@ -34,6 +35,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     ui->projectComboBox->addItem("Project", 0);
     ui->projectComboBox->addItem("File System", 1);
+    ui->projectComboBox->addItem("Explorer", 2);
 
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpen);
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::onTabCloseRequested);
@@ -108,6 +110,12 @@ void MainWindow::onActionOpen(bool checked)
     project_treeviews_.push_back(filesystem_view);
     ui->projectLayout->addWidget(filesystem_view);
     connect(ui->filter, &QLineEdit::textChanged, filesystem_view->proxy_, &FuzzyProxyModel::onFilterChanged);
+
+    auto explorer_view = new ExplorerView(this);
+    explorer_view->setHidden(true);
+    project_treeviews_.push_back(explorer_view);
+    ui->projectLayout->addWidget(explorer_view);
+    connect(ui->filter, &QLineEdit::textChanged, explorer_view->proxy_, &FuzzyProxyModel::onFilterChanged);
 
     ui->projectComboBox->setEnabled(true);
     ui->projectComboBox->setCurrentIndex(0);

@@ -12,9 +12,8 @@ public:
 public slots:
     void onFilterChanged(QString filter);
 
-private:
+public:
     QString filter_;
-    bool filter_empty_ = true;
 };
 
 #endif // PROXYMODELS_H
