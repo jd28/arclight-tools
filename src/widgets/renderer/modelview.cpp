@@ -146,8 +146,8 @@ void ModelView::initializeGL()
     updateCameraVectors();
 
     // Set camera movement and rotation speeds
-    movementSpeed = 0.5f;
-    rotationSpeed = 1.0f;
+    movementSpeed = 2.5f;
+    rotationSpeed = 2.5f;
 
     emit initialized();
 }
