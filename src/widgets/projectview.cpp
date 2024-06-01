@@ -1,4 +1,4 @@
-#include "filesystemview.h"
+#include "projectview.h"
 
 #include "util/restypeicons.h"
 
@@ -8,11 +8,12 @@
 #include <QDir>
 #include <QFileInfo>
 
-// == FileSystemItem ==========================================================
+// == ProjectItem =============================================================
 // ============================================================================
 
-FileSystemItem::FileSystemItem(const QString& path, FileSystemItem* parent)
+ProjectItem::ProjectItem(const QString& path, nw::StaticDirectory* module, ProjectItem* parent)
     : AbstractTreeItem(0, parent)
+    , module_{module}
     , path_{path}
 {
     QFileInfo fi(path_);
@@ -21,7 +22,7 @@ FileSystemItem::FileSystemItem(const QString& path, FileSystemItem* parent)
     restype_ = nw::ResourceType::from_extension(fi.completeSuffix().toStdString());
 }
 
-QVariant FileSystemItem::data(int column, int role) const
+QVariant ProjectItem::data(int column, int role) const
 {
     if (column != 0) { return {}; }
     if (role == Qt::DisplayRole) {
@@ -37,33 +38,34 @@ QVariant FileSystemItem::data(int column, int role) const
     return {};
 }
 
-// == FileSystemModel ========================================================
+// == ProjectModel ============================================================
 // ============================================================================
 
-FileSystemModel::FileSystemModel(QString path, QObject* parent)
+ProjectModel::ProjectModel(nw::StaticDirectory* module, QObject* parent)
     : AbstractTreeModel{parent}
-    , path_{std::move(path)}
+    , module_{module}
+    , path_{QString::fromStdString(module_->path())}
 {
 }
 
-int FileSystemModel::columnCount(const QModelIndex& parent) const
+int ProjectModel::columnCount(const QModelIndex& parent) const
 {
     return 1;
 }
 
-QVariant FileSystemModel::data(const QModelIndex& index, int role) const
+QVariant ProjectModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid()) { return {}; }
-    auto item = reinterpret_cast<FileSystemItem*>(index.internalPointer());
+    auto item = reinterpret_cast<ProjectItem*>(index.internalPointer());
     return item->data(index.column(), role);
 }
 
-void FileSystemModel::loadRootItems()
+void ProjectModel::loadRootItems()
 {
     walkDirectory(path_);
 }
 
-void FileSystemModel::walkDirectory(const QString& path, FileSystemItem* parent)
+void ProjectModel::walkDirectory(const QString& path, ProjectItem* parent)
 {
     QDir dir(path);
 
@@ -72,7 +74,7 @@ void FileSystemModel::walkDirectory(const QString& path, FileSystemItem* parent)
 
     for (const QFileInfo& fileInfo : list) {
         auto path = fileInfo.absoluteFilePath();
-        auto it = new FileSystemItem(path);
+        auto it = new ProjectItem(path, module_);
 
         if (parent) {
             parent->appendChild(it);
@@ -86,18 +88,18 @@ void FileSystemModel::walkDirectory(const QString& path, FileSystemItem* parent)
     }
 }
 
-// == FileSystemProxtModel ====================================================
+// == ProjectProxyModel =======================================================
 // ============================================================================
 
-FileSystemProxyModel::FileSystemProxyModel(QObject* parent)
+ProjectProxyModel::ProjectProxyModel(QObject* parent)
     : FuzzyProxyModel(parent)
 {
 }
 
-bool FileSystemProxyModel::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
+bool ProjectProxyModel::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
 {
-    auto lhs = static_cast<FileSystemItem*>(source_left.internalPointer());
-    auto rhs = static_cast<FileSystemItem*>(source_right.internalPointer());
+    auto lhs = static_cast<ProjectItem*>(source_left.internalPointer());
+    auto rhs = static_cast<ProjectItem*>(source_right.internalPointer());
 
     if (lhs->is_folder_ && !rhs->is_folder_) {
         return true;
@@ -107,17 +109,17 @@ bool FileSystemProxyModel::lessThan(const QModelIndex& source_left, const QModel
     return lhs->basename_.compare(rhs->basename_, Qt::CaseInsensitive) < 0;
 }
 
-// == FileSystemView ==========================================================
+// == ProjectView ==========================================================
 // ============================================================================
 
-FileSystemView::FileSystemView(QString path, QWidget* parent)
+ProjectView::ProjectView(nw::StaticDirectory* module, QWidget* parent)
     : QTreeView(parent)
-    , path_{std::move(path)}
+    , module_{module}
 {
     setHeaderHidden(true);
-    model_ = new FileSystemModel(path_, this);
+    model_ = new ProjectModel(module_, this);
     model_->loadRootItems();
-    proxy_ = new FileSystemProxyModel(this);
+    proxy_ = new ProjectProxyModel(this);
     proxy_->setRecursiveFilteringEnabled(true);
     proxy_->setSourceModel(model_);
     setModel(proxy_);

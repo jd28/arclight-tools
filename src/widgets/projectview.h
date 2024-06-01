@@ -3,63 +3,66 @@
 
 #include "AbstractTreeModel.hpp"
 
+#include "nw/resources/StaticDirectory.hpp"
 #include "proxymodels.h"
 
 #include "nw/resources/ResourceType.hpp"
 
 #include <QTreeView>
 
-// == FileSystemItem ==========================================================
+// == ProjectItem =============================================================
 // ============================================================================
 
-class FileSystemItem : public AbstractTreeItem {
+class ProjectItem : public AbstractTreeItem {
 public:
-    FileSystemItem(const QString& path, FileSystemItem* parent = nullptr);
+    ProjectItem(const QString& path, nw::StaticDirectory* module, ProjectItem* parent = nullptr);
     virtual QVariant data(int column, int role = Qt::DisplayRole) const override;
 
+    nw::StaticDirectory* module_ = nullptr;
     QString path_;
     QString basename_;
     bool is_folder_ = false;
     nw::ResourceType::type restype_ = nw::ResourceType::invalid;
 };
 
-// == FileSystemModel =========================================================
+// == ProjectModel ============================================================
 // ============================================================================
 
-class FileSystemModel : public AbstractTreeModel {
+class ProjectModel : public AbstractTreeModel {
     Q_OBJECT
 public:
-    explicit FileSystemModel(QString path, QObject* parent = nullptr);
+    explicit ProjectModel(nw::StaticDirectory* module, QObject* parent = nullptr);
 
     virtual int columnCount(const QModelIndex& parent) const override;
     virtual QVariant data(const QModelIndex& index, int role) const override;
     virtual void loadRootItems() override;
-    void walkDirectory(const QString& path, FileSystemItem* parent = nullptr);
+    void walkDirectory(const QString& path, ProjectItem* parent = nullptr);
 
+    nw::StaticDirectory* module_ = nullptr;
     QString path_;
 };
 
 // == FileSystemProxtModel ====================================================
 // ============================================================================
 
-class FileSystemProxyModel : public FuzzyProxyModel {
+class ProjectProxyModel : public FuzzyProxyModel {
     Q_OBJECT
 public:
-    FileSystemProxyModel(QObject* parent = nullptr);
+    ProjectProxyModel(QObject* parent = nullptr);
 
     virtual bool lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const override;
 };
 
-// == FileSystemView ==========================================================
+// == ProjectView =============================================================
 // ============================================================================
 
-class FileSystemView : public QTreeView {
+class ProjectView : public QTreeView {
 public:
-    FileSystemView(QString path, QWidget* parent = nullptr);
+    ProjectView(nw::StaticDirectory* module, QWidget* parent = nullptr);
 
-    QString path_;
-    FileSystemModel* model_;
-    FileSystemProxyModel* proxy_;
+    nw::StaticDirectory* module_ = nullptr;
+    ProjectModel* model_;
+    ProjectProxyModel* proxy_;
 };
 
 #endif // FILESTYSTEMMODEL_H

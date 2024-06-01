@@ -22,8 +22,8 @@ add_library(arclight-widgets STATIC
     checkboxdelegate.cpp
     arealistview.h
     arealistview.cpp
-    filesystemview.h
-    filesystemview.cpp
+    projectview.h
+    projectview.cpp
     proxymodels.h
     proxymodels.cpp
     explorerview.h

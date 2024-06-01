@@ -17,6 +17,7 @@ class QTreeView;
 
 namespace nw {
 struct Module;
+struct StaticDirectory;
 }
 
 namespace Ui {
@@ -45,6 +46,7 @@ public slots:
 private:
     Ui::MainWindow *ui;
     nw::Module* module_ = nullptr;
+    nw::StaticDirectory* module_container_ = nullptr;
     absl::flat_hash_map<QString, ExtensionCallback> ext_to_view_;
     absl::flat_hash_map<nw::ResourceType::type, ResourceCallback> type_to_view_;
     QList<QTreeView*> project_treeviews_;

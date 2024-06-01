@@ -44,14 +44,8 @@ class AreaListModel : public AbstractTreeModel {
 public:
     explicit AreaListModel(nw::Module* module, QString path, QObject* parent = nullptr);
 
-    // Header:
-    // QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-
-    // QAbstractItemModel interface
     virtual int columnCount(const QModelIndex& parent) const override;
     virtual QVariant data(const QModelIndex& index, int role) const override;
-
-    // AbstractTreeModel interface
     virtual void loadRootItems() override;
 
 private:

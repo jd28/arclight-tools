@@ -9,7 +9,7 @@
 #include "explorerview.h"
 #include "widgets/ArclightView.h"
 #include "widgets/arealistview.h"
-#include "widgets/filesystemview.h"
+#include "widgets/projectview.h"
 
 #include "nw/formats/Dialog.hpp"
 #include "nw/kernel/Resources.hpp"
@@ -93,20 +93,13 @@ void MainWindow::onActionOpen(bool checked)
     auto path = QFileDialog::getOpenFileName(this, "Open Project", "", "Module (*.ifo *.ifo.json)");
     if (path.isEmpty()) { return; }
     QFileInfo fi(path);
+    module_ = nw::kernel::load_module(fi.absolutePath().toStdString());
+    module_container_ = dynamic_cast<nw::StaticDirectory*>(nw::kernel::resman().module_container());
 
     ui->placeHolder->setHidden(true);
 
-    auto project_view = new ProjectView(this);
-    module_ = nw::kernel::load_module(fi.absolutePath().toStdString());
-    project_view->load(module_, fi.absolutePath());
-
-    project_treeviews_.push_back(project_view);
-    ui->projectLayout->addWidget(project_view);
-    connect(project_view, &ProjectView::doubleClicked, this, &MainWindow::onProjectDoubleClicked);
-    connect(ui->filter, &QLineEdit::textChanged, project_view->filter_, &FuzzyProxyModel::onFilterChanged);
-
-    auto filesystem_view = new FileSystemView(fi.absolutePath(), this);
-    filesystem_view->setHidden(true);
+    auto filesystem_view = new ProjectView(module_container_, this);
+    filesystem_view->setHidden(false);
     project_treeviews_.push_back(filesystem_view);
     ui->projectLayout->addWidget(filesystem_view);
     connect(ui->filter, &QLineEdit::textChanged, filesystem_view->proxy_, &FuzzyProxyModel::onFilterChanged);
