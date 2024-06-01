@@ -1,5 +1,5 @@
-#ifndef PROJECTVIEW_H
-#define PROJECTVIEW_H
+#ifndef AREALISTVIEW_H
+#define AREALISTVIEW_H
 
 #include "AbstractTreeModel.hpp"
 
@@ -8,8 +8,6 @@
 #include <QTreeView>
 #include <QWidget>
 
-class ProjectItem;
-class ProjectModel;
 class FuzzyProxyModel;
 
 namespace nw {
@@ -17,37 +15,34 @@ struct Area;
 struct Module;
 }
 
-// == ProjectItem =============================================================
+// == AreaListItem ============================================================
 // ============================================================================
 
-enum struct ProjectItemType {
-    category,
+enum struct AreaListItemType {
     area,
-    dialog,
+    // Instances will go here
 };
 
-class ProjectItem : public AbstractTreeItem {
+class AreaListItem : public AbstractTreeItem {
 public:
-    ProjectItem(nw::Area* area, ProjectItemType type, ProjectItem* parent = nullptr);
-    ProjectItem(QString name, ProjectItemType type, ProjectItem* parent = nullptr);
-    ProjectItem(nw::Resource res, ProjectItemType type, ProjectItem* parent);
+    AreaListItem(nw::Area* area, AreaListItem* parent = nullptr);
 
     virtual QVariant data(int column, int role = Qt::DisplayRole) const override;
 
     nw::Area* area_ = nullptr;
     QString path_;
     nw::Resource res_;
-    ProjectItemType type_;
+    AreaListItemType type_;
 };
 
-// == ProjectModel ============================================================
+// == AreaListModel ===========================================================
 // ============================================================================
 
-class ProjectModel : public AbstractTreeModel {
+class AreaListModel : public AbstractTreeModel {
     Q_OBJECT
 
 public:
-    explicit ProjectModel(nw::Module* module, QString path, QObject* parent = nullptr);
+    explicit AreaListModel(nw::Module* module, QString path, QObject* parent = nullptr);
 
     // Header:
     // QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -64,28 +59,28 @@ private:
     QString path_;
 };
 
-// == ProjectView =============================================================
+// == AreaListView ============================================================
 // ============================================================================
 
-class ProjectView : public QTreeView {
+class AreaListView : public QTreeView {
     Q_OBJECT
 
 public:
-    explicit ProjectView(QWidget* parent = nullptr);
-    ~ProjectView();
+    explicit AreaListView(QWidget* parent = nullptr);
+    ~AreaListView();
 
     void load(nw::Module* module, QString path);
 
     nw::Module* module_ = nullptr;
     QString path_;
-    ProjectModel* model_ = nullptr;
+    AreaListModel* model_ = nullptr;
     FuzzyProxyModel* filter_ = nullptr;
 
 public slots:
     void onDoubleClicked(const QModelIndex& index);
 
 signals:
-    void doubleClicked(ProjectItem*);
+    void doubleClicked(AreaListItem*);
 };
 
-#endif // PROJECTVIEW_H
+#endif // AREALISTVIEW_H

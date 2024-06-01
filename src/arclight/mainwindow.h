@@ -11,7 +11,7 @@
 
 class ArclightView;
 class PluginInfoDialog;
-class ProjectItem;
+class AreaListItem;
 
 class QTreeView;
 
@@ -38,7 +38,7 @@ public:
 
 public slots:
     void onActionOpen(bool checked = false);
-    void onProjectDoubleClicked(ProjectItem* item);
+    void onProjectDoubleClicked(AreaListItem* item);
     void onTabCloseRequested(int index);
     void onProjectViewChanged(int index);
 

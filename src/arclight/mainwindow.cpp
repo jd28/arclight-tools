@@ -8,8 +8,8 @@
 #include "LanguageMenu/LanguageMenu.h"
 #include "explorerview.h"
 #include "widgets/ArclightView.h"
+#include "widgets/arealistview.h"
 #include "widgets/filesystemview.h"
-#include "widgets/projectview.h"
 
 #include "nw/formats/Dialog.hpp"
 #include "nw/kernel/Resources.hpp"
@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget* parent)
     loadCallbacks();
 
     ui->projectComboBox->addItem("Project", 0);
-    ui->projectComboBox->addItem("File System", 1);
+    ui->projectComboBox->addItem("Areas", 1);
     ui->projectComboBox->addItem("Explorer", 2);
 
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpen);
@@ -111,6 +111,15 @@ void MainWindow::onActionOpen(bool checked)
     ui->projectLayout->addWidget(filesystem_view);
     connect(ui->filter, &QLineEdit::textChanged, filesystem_view->proxy_, &FuzzyProxyModel::onFilterChanged);
 
+    auto area_list_view = new AreaListView(this);
+    area_list_view->setHidden(true);
+    area_list_view->load(module_, fi.absolutePath());
+
+    project_treeviews_.push_back(area_list_view);
+    ui->projectLayout->addWidget(area_list_view);
+    connect(area_list_view, &AreaListView::doubleClicked, this, &MainWindow::onProjectDoubleClicked);
+    connect(ui->filter, &QLineEdit::textChanged, area_list_view->filter_, &FuzzyProxyModel::onFilterChanged);
+
     auto explorer_view = new ExplorerView(this);
     explorer_view->setHidden(true);
     project_treeviews_.push_back(explorer_view);
@@ -122,33 +131,16 @@ void MainWindow::onActionOpen(bool checked)
     ui->filter->setEnabled(true);
 }
 
-void MainWindow::onProjectDoubleClicked(ProjectItem* item)
+void MainWindow::onProjectDoubleClicked(AreaListItem* item)
 {
     if (!item) { return; }
 
-    if (item->type_ == ProjectItemType::area) {
+    if (item->type_ == AreaListItemType::area) {
         auto av = new AreaView(item->area_, ui->tabWidget);
         auto idx = ui->tabWidget->addTab(av, item->data(0).toString());
         ui->tabWidget->setTabsClosable(true);
         ui->tabWidget->setCurrentIndex(idx);
         av->load_model();
-    } else if (item->type_ == ProjectItemType::dialog) {
-        auto rd = nw::kernel::resman().demand(item->res_);
-        if (rd.bytes.size() == 0) { return; }
-        nw::Gff gff{std::move(rd)};
-        if (!gff.valid()) { return; }
-
-        auto dlg = new nw::Dialog(gff.toplevel());
-        if (!dlg->valid()) {
-            delete dlg;
-            return;
-        }
-
-        auto av = new DialogView(dlg, ui->tabWidget);
-        auto idx = ui->tabWidget->addTab(av, item->data(0).toString());
-        ui->tabWidget->setTabsClosable(true);
-        ui->tabWidget->setCurrentIndex(idx);
-        av->setFocus();
     }
 }
 

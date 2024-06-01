@@ -20,8 +20,8 @@ add_library(arclight-widgets STATIC
     util/restypeicons.cpp
     checkboxdelegate.h
     checkboxdelegate.cpp
-    projectview.h
-    projectview.cpp
+    arealistview.h
+    arealistview.cpp
     filesystemview.h
     filesystemview.cpp
     proxymodels.h
