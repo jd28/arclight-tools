@@ -132,11 +132,12 @@ void MainWindow::onActionOpen(bool checked)
 
     ui->placeHolder->setHidden(true);
 
-    auto filesystem_view = new ProjectView(module_container_, this);
-    filesystem_view->setHidden(false);
-    project_treeviews_.push_back(filesystem_view);
-    ui->projectLayout->addWidget(filesystem_view);
-    connect(ui->filter, &QLineEdit::textChanged, filesystem_view->proxy_, &FuzzyProxyModel::onFilterChanged);
+    auto project_view = new ProjectView(module_container_, this);
+    project_view->setHidden(false);
+    project_treeviews_.push_back(project_view);
+    ui->projectLayout->addWidget(project_view);
+    connect(ui->filter, &QLineEdit::textChanged, project_view->proxy_, &FuzzyProxyModel::onFilterChanged);
+    connect(project_view, &ProjectView::itemDoubleClicked, this, &MainWindow::onProjectDoubleClicked);
 
     auto area_list_view = new AreaListView(this);
     area_list_view->setHidden(true);
@@ -144,7 +145,7 @@ void MainWindow::onActionOpen(bool checked)
 
     project_treeviews_.push_back(area_list_view);
     ui->projectLayout->addWidget(area_list_view);
-    connect(area_list_view, &AreaListView::doubleClicked, this, &MainWindow::onProjectDoubleClicked);
+    connect(area_list_view, &AreaListView::itemDoubleClicked, this, &MainWindow::onAreaListDoubleClicked);
     connect(ui->filter, &QLineEdit::textChanged, area_list_view->filter_, &FuzzyProxyModel::onFilterChanged);
 
     auto explorer_view = new ExplorerView(this);
@@ -158,7 +159,7 @@ void MainWindow::onActionOpen(bool checked)
     ui->filter->setEnabled(true);
 }
 
-void MainWindow::onProjectDoubleClicked(AreaListItem* item)
+void MainWindow::onAreaListDoubleClicked(AreaListItem* item)
 {
     if (!item) { return; }
 
@@ -169,6 +170,19 @@ void MainWindow::onProjectDoubleClicked(AreaListItem* item)
         ui->tabWidget->setCurrentIndex(idx);
         av->load_model();
     }
+}
+
+void MainWindow::onProjectDoubleClicked(ProjectItem* item)
+{
+    if (!item || item->is_folder_) { return; }
+
+    auto it = type_to_view_.find(item->res_.type);
+    if (it == std::end(type_to_view_)) { return; }
+
+    auto view = it->second(item->res_);
+    auto idx = ui->tabWidget->addTab(view, QString::fromStdString(item->res_.filename()));
+    ui->tabWidget->setTabsClosable(true);
+    ui->tabWidget->setCurrentIndex(idx);
 }
 
 void MainWindow::onProjectViewChanged(int index)

@@ -10,8 +10,8 @@
 #include <functional>
 
 class ArclightView;
-class PluginInfoDialog;
 class AreaListItem;
+class ProjectItem;
 
 class QTreeView;
 
@@ -41,9 +41,10 @@ public slots:
     void onActionClose(bool checked = false);
     void onActionCloseProject(bool checked = false);
     void onActionOpen(bool checked = false);
-    void onProjectDoubleClicked(AreaListItem* item);
-    void onTabCloseRequested(int index);
+    void onAreaListDoubleClicked(AreaListItem* item);
+    void onProjectDoubleClicked(ProjectItem* item);
     void onProjectViewChanged(int index);
+    void onTabCloseRequested(int index);
 
 private:
     Ui::MainWindow *ui;

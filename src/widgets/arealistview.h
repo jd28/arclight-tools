@@ -74,7 +74,7 @@ public slots:
     void onDoubleClicked(const QModelIndex& index);
 
 signals:
-    void doubleClicked(AreaListItem*);
+    void itemDoubleClicked(AreaListItem*);
 };
 
 #endif // AREALISTVIEW_H

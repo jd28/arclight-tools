@@ -102,5 +102,5 @@ void AreaListView::onDoubleClicked(const QModelIndex& index)
     QModelIndex sourceIndex = filter_->mapToSource(index);
     if (!sourceIndex.isValid()) { return; }
 
-    emit doubleClicked(static_cast<AreaListItem*>(sourceIndex.internalPointer()));
+    emit itemDoubleClicked(static_cast<AreaListItem*>(sourceIndex.internalPointer()));
 }

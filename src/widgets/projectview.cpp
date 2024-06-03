@@ -146,4 +146,15 @@ ProjectView::ProjectView(nw::StaticDirectory* module, QWidget* parent)
     proxy_->setSourceModel(model_);
     setModel(proxy_);
     proxy_->sort(0);
+
+    connect(this, &QTreeView::doubleClicked, this, &ProjectView::onDoubleClicked);
+}
+
+void ProjectView::onDoubleClicked(const QModelIndex& index)
+{
+    if (!index.isValid()) { return; }
+    QModelIndex sourceIndex = proxy_->mapToSource(index);
+    if (!sourceIndex.isValid()) { return; }
+
+    emit itemDoubleClicked(static_cast<ProjectItem*>(sourceIndex.internalPointer()));
 }

@@ -57,9 +57,17 @@ public:
 // ============================================================================
 
 class ProjectView : public QTreeView {
+    Q_OBJECT
 public:
     ProjectView(nw::StaticDirectory* module, QWidget* parent = nullptr);
 
+public slots:
+    void onDoubleClicked(const QModelIndex& index);
+
+signals:
+    void itemDoubleClicked(ProjectItem*);
+
+public:
     nw::StaticDirectory* module_ = nullptr;
     ProjectModel* model_;
     ProjectProxyModel* proxy_;
