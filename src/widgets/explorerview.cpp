@@ -310,16 +310,30 @@ bool ExplorerProxy::lessThan(const QModelIndex& source_left, const QModelIndex& 
 // ============================================================================
 
 ExplorerView::ExplorerView(QWidget* parent)
-    : QTreeView(parent)
+    : ArclightTreeView(parent)
 {
     setHeaderHidden(true);
     setSortingEnabled(false);
-    model_ = new ExplorerModel(this);
-    model_->loadRootItems();
+}
+
+ExplorerView::~ExplorerView()
+{
+    delete model_;
+}
+
+void ExplorerView::activateModel()
+{
     proxy_ = new ExplorerProxy(this);
     proxy_->setRecursiveFilteringEnabled(true);
     proxy_->setSourceModel(model_);
     setModel(proxy_);
     model()->sort(0);
     expandRecursively(model()->index(0, 0), 0);
+}
+
+AbstractTreeModel* ExplorerView::loadModel()
+{
+    model_ = new ExplorerModel();
+    model_->loadRootItems();
+    return model_;
 }

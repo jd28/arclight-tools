@@ -2,6 +2,7 @@
 #define EXPLORERVIEW_H
 
 #include "AbstractTreeModel.hpp"
+#include "arclighttreeview.h"
 #include "proxymodels.h"
 
 #include "nw/resources/Container.hpp"
@@ -61,9 +62,13 @@ protected:
 // == ExplorerView ============================================================
 // ============================================================================
 
-class ExplorerView : public QTreeView {
+class ExplorerView : public ArclightTreeView {
 public:
     ExplorerView(QWidget* parent = nullptr);
+    ~ExplorerView();
+
+    virtual void activateModel() override;
+    virtual AbstractTreeModel* loadModel() override;
 
     ExplorerModel* model_;
     ExplorerProxy* proxy_;

@@ -2,6 +2,7 @@
 #define AREALISTVIEW_H
 
 #include "AbstractTreeModel.hpp"
+#include "arclighttreeview.h"
 
 #include "nw/resources/Resource.hpp"
 
@@ -56,14 +57,15 @@ private:
 // == AreaListView ============================================================
 // ============================================================================
 
-class AreaListView : public QTreeView {
+class AreaListView : public ArclightTreeView {
     Q_OBJECT
 
 public:
-    explicit AreaListView(QWidget* parent = nullptr);
+    explicit AreaListView(nw::Module* module, QString path, QWidget* parent = nullptr);
     ~AreaListView();
 
-    void load(nw::Module* module, QString path);
+    virtual void activateModel() override;
+    virtual AreaListModel* loadModel() override;
 
     nw::Module* module_ = nullptr;
     QString path_;

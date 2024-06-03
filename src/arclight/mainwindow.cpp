@@ -7,8 +7,10 @@
 #include "DialogView/dialogview.h"
 #include "LanguageMenu/LanguageMenu.h"
 #include "explorerview.h"
+#include "widgets/AbstractTreeModel.hpp"
 #include "widgets/ArclightView.h"
 #include "widgets/QtWaitingSpinner/waitingspinnerwidget.h"
+#include "widgets/arclighttreeview.h"
 #include "widgets/arealistview.h"
 #include "widgets/projectview.h"
 
@@ -138,29 +140,28 @@ void MainWindow::loadTreeviews()
     project_view->setHidden(false);
     project_treeviews_.push_back(project_view);
     ui->projectLayout->addWidget(project_view);
-    connect(ui->filter, &QLineEdit::textChanged, project_view->proxy_, &ProjectProxyModel::onFilterChanged);
-    connect(project_view, &ProjectView::itemDoubleClicked, this, &MainWindow::onProjectDoubleClicked);
 
-    auto area_list_view = new AreaListView(this);
+    auto area_list_view = new AreaListView(module_, fi.absolutePath(), this);
     area_list_view->setHidden(true);
-    area_list_view->load(module_, fi.absolutePath());
-
     project_treeviews_.push_back(area_list_view);
     ui->projectLayout->addWidget(area_list_view);
-    connect(area_list_view, &AreaListView::itemDoubleClicked, this, &MainWindow::onAreaListDoubleClicked);
-    connect(ui->filter, &QLineEdit::textChanged, area_list_view->filter_, &FuzzyProxyModel::onFilterChanged);
 
     auto explorer_view = new ExplorerView(this);
     explorer_view->setHidden(true);
     project_treeviews_.push_back(explorer_view);
     ui->projectLayout->addWidget(explorer_view);
-    connect(ui->filter, &QLineEdit::textChanged, explorer_view->proxy_, &FuzzyProxyModel::onFilterChanged);
 
-    ui->projectComboBox->setEnabled(true);
-    ui->projectComboBox->setCurrentIndex(0);
-    ui->filter->setEnabled(true);
+    treeview_load_watcher_ = new QFutureWatcher<QList<AbstractTreeModel*>>(this);
+    connect(treeview_load_watcher_, &QFutureWatcher<QList<AbstractTreeModel*>>::finished, this, &MainWindow::onTreeviewsLoaded);
 
-    spinner_->stop();
+    treeview_load_future_ = QtConcurrent::run([views = this->project_treeviews_] {
+        QList<AbstractTreeModel*> result;
+        for (auto it : views) {
+            result.push_back(it->loadModel());
+        }
+        return result;
+    });
+    treeview_load_watcher_->setFuture(treeview_load_future_);
 }
 
 void MainWindow::onActionOpen(bool checked)
@@ -175,7 +176,6 @@ void MainWindow::onActionOpen(bool checked)
     mod_load_watcher_ = new QFutureWatcher<QList<nw::Module*>>(this);
     connect(mod_load_watcher_, &QFutureWatcher<QList<nw::Module*>>::finished, this, &MainWindow::loadTreeviews);
 
-    // Start the background task using QtConcurrent::run
     mod_load_future_ = QtConcurrent::run([path = module_path_.toStdString()] {
         return QList<nw::Module*>{nw::kernel::load_module(path)};
     });
@@ -224,4 +224,37 @@ void MainWindow::onTabCloseRequested(int index)
     auto cw = reinterpret_cast<ArclightView*>(ui->tabWidget->widget(index));
     ui->tabWidget->removeTab(index);
     delete cw;
+}
+
+void MainWindow::onTreeviewsLoaded()
+{
+
+    auto result = treeview_load_watcher_->result();
+    delete treeview_load_watcher_;
+
+    Q_UNUSED(result);
+
+    for (auto it : project_treeviews_) {
+        if (!it->moveToThread(this->thread())) {
+            LOG_F(INFO, "can't move thread");
+        }
+        it->activateModel();
+    }
+
+    auto project_view = static_cast<ProjectView*>(project_treeviews_[0]);
+    connect(ui->filter, &QLineEdit::textChanged, project_view->proxy_, &ProjectProxyModel::onFilterChanged);
+    connect(project_view, &ProjectView::itemDoubleClicked, this, &MainWindow::onProjectDoubleClicked);
+
+    auto area_list_view = static_cast<AreaListView*>(project_treeviews_[1]);
+    connect(area_list_view, &AreaListView::itemDoubleClicked, this, &MainWindow::onAreaListDoubleClicked);
+    connect(ui->filter, &QLineEdit::textChanged, area_list_view->filter_, &FuzzyProxyModel::onFilterChanged);
+
+    auto explorer_view = static_cast<ExplorerView*>(project_treeviews_[2]);
+    connect(ui->filter, &QLineEdit::textChanged, explorer_view->proxy_, &FuzzyProxyModel::onFilterChanged);
+
+    ui->projectComboBox->setEnabled(true);
+    ui->projectComboBox->setCurrentIndex(0);
+    ui->filter->setEnabled(true);
+
+    spinner_->stop();
 }

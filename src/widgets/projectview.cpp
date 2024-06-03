@@ -157,19 +157,32 @@ void ProjectProxyModel::onFilterChanged(QString filter)
 // ============================================================================
 
 ProjectView::ProjectView(nw::StaticDirectory* module, QWidget* parent)
-    : QTreeView(parent)
+    : ArclightTreeView(parent)
     , module_{module}
 {
     setHeaderHidden(true);
-    model_ = new ProjectModel(module_, this);
-    model_->loadRootItems();
+    connect(this, &QTreeView::doubleClicked, this, &ProjectView::onDoubleClicked);
+}
+
+ProjectView::~ProjectView()
+{
+    delete model_;
+}
+
+void ProjectView::activateModel()
+{
     proxy_ = new ProjectProxyModel(this);
     proxy_->setRecursiveFilteringEnabled(true);
     proxy_->setSourceModel(model_);
     setModel(proxy_);
     proxy_->sort(0);
+}
 
-    connect(this, &QTreeView::doubleClicked, this, &ProjectView::onDoubleClicked);
+AbstractTreeModel* ProjectView::loadModel()
+{
+    model_ = new ProjectModel(module_);
+    model_->loadRootItems();
+    return model_;
 }
 
 void ProjectView::onDoubleClicked(const QModelIndex& index)

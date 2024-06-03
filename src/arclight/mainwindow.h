@@ -11,11 +11,11 @@
 #include <functional>
 
 class ArclightView;
+class ArclightTreeView;
+class AbstractTreeModel;
 class AreaListItem;
 class ProjectItem;
 class WaitingSpinnerWidget;
-
-class QTreeView;
 
 namespace nw {
 struct Module;
@@ -48,6 +48,7 @@ public slots:
     void onProjectDoubleClicked(ProjectItem* item);
     void onProjectViewChanged(int index);
     void onTabCloseRequested(int index);
+    void onTreeviewsLoaded();
 
 private:
     Ui::MainWindow *ui;
@@ -56,10 +57,12 @@ private:
     QString module_path_;
     absl::flat_hash_map<QString, ExtensionCallback> ext_to_view_;
     absl::flat_hash_map<nw::ResourceType::type, ResourceCallback> type_to_view_;
-    QList<QTreeView*> project_treeviews_;
+    QList<ArclightTreeView*> project_treeviews_;
     bool close_project_cancelled_ = false;
     QFuture<QList<nw::Module*>> mod_load_future_;
     QFutureWatcher<QList<nw::Module*>>* mod_load_watcher_ = nullptr;
+    QFuture<QList<AbstractTreeModel*>> treeview_load_future_;
+    QFutureWatcher<QList<AbstractTreeModel*>>* treeview_load_watcher_ = nullptr;
     WaitingSpinnerWidget* spinner_ = nullptr;
 };
 

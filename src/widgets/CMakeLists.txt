@@ -28,6 +28,8 @@ add_library(arclight-widgets STATIC
     proxymodels.cpp
     explorerview.h
     explorerview.cpp
+    arclighttreeview.h
+    arclighttreeview.cpp
 )
 
 add_subdirectory(AreaView)

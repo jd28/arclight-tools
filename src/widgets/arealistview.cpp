@@ -69,31 +69,35 @@ void AreaListModel::loadRootItems()
 // == AreaListView ===========================================================
 // ============================================================================
 
-AreaListView::AreaListView(QWidget* parent)
-    : QTreeView(parent)
+AreaListView::AreaListView(nw::Module* module, QString path, QWidget* parent)
+    : ArclightTreeView(parent)
+    , module_{module}
+    , path_{std::move(path)}
+
 {
     setHeaderHidden(true);
-
     connect(this, &QTreeView::doubleClicked, this, &AreaListView::onDoubleClicked);
 }
 
 AreaListView::~AreaListView()
 {
+    delete model_;
 }
 
-void AreaListView::load(nw::Module* module, QString path)
+void AreaListView::activateModel()
 {
-    module_ = module;
-    path_ = std::move(path);
-    model_ = new AreaListModel(module_, path_, this);
-    model_->loadRootItems();
-
     filter_ = new FuzzyProxyModel(this);
     filter_->setRecursiveFilteringEnabled(true);
     filter_->setSourceModel(model_);
     filter_->sort(0);
-
     setModel(filter_);
+}
+
+AreaListModel* AreaListView::loadModel()
+{
+    model_ = new AreaListModel(module_, path_);
+    model_->loadRootItems();
+    return model_;
 }
 
 void AreaListView::onDoubleClicked(const QModelIndex& index)

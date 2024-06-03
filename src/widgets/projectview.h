@@ -3,6 +3,7 @@
 
 #include "AbstractTreeModel.hpp"
 
+#include "arclighttreeview.h"
 #include "nw/resources/StaticDirectory.hpp"
 #include "proxymodels.h"
 
@@ -64,10 +65,14 @@ public:
 // == ProjectView =============================================================
 // ============================================================================
 
-class ProjectView : public QTreeView {
+class ProjectView : public ArclightTreeView {
     Q_OBJECT
 public:
     ProjectView(nw::StaticDirectory* module, QWidget* parent = nullptr);
+    ~ProjectView();
+
+    void activateModel();
+    AbstractTreeModel* loadModel();
 
 public slots:
     void onDoubleClicked(const QModelIndex& index);
