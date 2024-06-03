@@ -306,4 +306,5 @@ ExplorerView::ExplorerView(QWidget* parent)
     proxy_->setRecursiveFilteringEnabled(true);
     proxy_->setSourceModel(model_);
     setModel(proxy_);
+    expandRecursively(model()->index(0, 0), 0);
 }
