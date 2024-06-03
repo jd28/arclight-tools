@@ -37,6 +37,8 @@ MainWindow::MainWindow(QWidget* parent)
     ui->projectComboBox->addItem("Areas", 1);
     ui->projectComboBox->addItem("Explorer", 2);
 
+    connect(ui->actionClose, &QAction::triggered, this, &MainWindow::onActionClose);
+    connect(ui->actionCloseProject, &QAction::triggered, this, &MainWindow::onActionCloseProject);
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpen);
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::onTabCloseRequested);
     connect(ui->projectComboBox, &QComboBox::currentIndexChanged, this, &MainWindow::onProjectViewChanged);
@@ -87,6 +89,38 @@ void MainWindow::loadCallbacks()
 
 // == Slots ===================================================================
 // ============================================================================
+
+void MainWindow::onActionClose(bool checked)
+{
+    onTabCloseRequested(ui->tabWidget->currentIndex());
+}
+
+void MainWindow::onActionCloseProject(bool checked)
+{
+    while (ui->tabWidget->currentIndex() != -1) {
+        onTabCloseRequested(ui->tabWidget->currentIndex());
+        // If when closing a tab that's not saved, user decides to cancel close,
+        // abort everything else.
+        if (close_project_cancelled_) { return; }
+    }
+
+    ui->projectComboBox->setCurrentIndex(0);
+    ui->projectComboBox->setEnabled(false);
+    ui->filter->clear();
+    ui->filter->setEnabled(false);
+
+    ui->placeHolder->setVisible(true);
+    for (auto widget : project_treeviews_) {
+        widget->setVisible(false);
+    }
+
+    for (auto widget : project_treeviews_) {
+        ui->projectLayout->removeWidget(widget);
+        delete widget;
+    }
+    project_treeviews_.clear();
+    nw::kernel::unload_module();
+}
 
 void MainWindow::onActionOpen(bool checked)
 {

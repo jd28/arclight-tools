@@ -55,6 +55,8 @@
     <addaction name="actionOpen"/>
     <addaction name="actionOpen_Folder"/>
     <addaction name="actionRecent_Projects"/>
+    <addaction name="actionClose"/>
+    <addaction name="actionCloseProject"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -132,6 +134,16 @@
   <action name="actionAboutPlugins">
    <property name="text">
     <string>About Plugins</string>
+   </property>
+  </action>
+  <action name="actionClose">
+   <property name="text">
+    <string>Close</string>
+   </property>
+  </action>
+  <action name="actionCloseProject">
+   <property name="text">
+    <string>Close Project</string>
    </property>
   </action>
  </widget>
