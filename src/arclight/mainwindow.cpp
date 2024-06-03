@@ -59,8 +59,7 @@ void MainWindow::loadCallbacks()
 {
     type_to_view_.emplace(nw::ResourceType::utc,
         [this](nw::Resource res) -> ArclightView* {
-            auto data = nw::kernel::resman().demand(res);
-            nw::Gff gff(std::move(data));
+            nw::Gff gff(nw::kernel::resman().demand(res));
             if (!gff.valid()) {
                 LOG_F(ERROR, "[utc] failed to open file: {}", res.filename());
                 return nullptr;
@@ -72,8 +71,7 @@ void MainWindow::loadCallbacks()
 
     type_to_view_.emplace(nw::ResourceType::dlg,
         [this](nw::Resource res) -> ArclightView* {
-            auto data = nw::kernel::resman().demand(res);
-            nw::Gff gff(std::move(data));
+            nw::Gff gff(nw::kernel::resman().demand(res));
             if (!gff.valid()) {
                 LOG_F(ERROR, "[dlg] failed to open file: {}", res.filename());
                 return nullptr;
@@ -98,11 +96,13 @@ void MainWindow::loadCallbacks()
 
 void MainWindow::onActionClose(bool checked)
 {
+    Q_UNUSED(checked);
     onTabCloseRequested(ui->tabWidget->currentIndex());
 }
 
 void MainWindow::onActionCloseProject(bool checked)
 {
+    Q_UNUSED(checked);
     while (ui->tabWidget->currentIndex() != -1) {
         onTabCloseRequested(ui->tabWidget->currentIndex());
         // If when closing a tab that's not saved, user decides to cancel close,
@@ -130,7 +130,9 @@ void MainWindow::onActionCloseProject(bool checked)
 
 void MainWindow::loadTreeviews()
 {
-    module_ = mod_load_watcher_->result()[0];
+    auto result = mod_load_watcher_->result();
+    delete mod_load_watcher_;
+    module_ = result[0];
     module_container_ = dynamic_cast<nw::StaticDirectory*>(nw::kernel::resman().module_container());
     QFileInfo fi{module_path_};
 
@@ -166,6 +168,8 @@ void MainWindow::loadTreeviews()
 
 void MainWindow::onActionOpen(bool checked)
 {
+    Q_UNUSED(checked);
+
     auto path = QFileDialog::getOpenFileName(this, "Open Project", "", "Module (*.ifo *.ifo.json)");
     if (path.isEmpty()) { return; }
 
@@ -235,9 +239,6 @@ void MainWindow::onTreeviewsLoaded()
     Q_UNUSED(result);
 
     for (auto it : project_treeviews_) {
-        if (!it->moveToThread(this->thread())) {
-            LOG_F(INFO, "can't move thread");
-        }
         it->activateModel();
     }
 
