@@ -22,15 +22,21 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
     for (size_t i = 0; i < appearances.entries.size(); ++i) {
         if (!appearances.entries[i].valid()) { continue; }
 
-        auto string = nw::kernel::strings().get(appearances.entries[i].string_ref);
-        if (string.empty()) { continue; }
-
-        if (appearances.entries[i].model.size() <= 1) {
-            string = fmt::format("(Dynamic) {}", string);
+        std::string string;
+        if (appearances.entries[i].string_ref != 0xFFFFFFFF) {
+            string = nw::kernel::strings().get(appearances.entries[i].string_ref);
+            if (!string.empty() && appearances.entries[i].model.size() <= 1) {
+                string = fmt::format("(Dynamic) {}", string);
+            }
         }
+
+        if (appearances.entries[i].label.empty()) { continue; }
+
+        string = appearances.entries[i].label;
 
         ui->appearance->addItem(QString::fromStdString(string), int(i));
         if (creature->appearance.id == i) {
+            LOG_F(INFO, "setting appearance: {}", idx);
             ui->appearance->setCurrentIndex(idx);
             is_dynamic = appearances.entries[i].model.size() <= 1;
         }
