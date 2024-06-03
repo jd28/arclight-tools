@@ -18,8 +18,19 @@ ProjectItem::ProjectItem(const QString& path, nw::StaticDirectory* module, Proje
 {
     QFileInfo fi(path_);
     is_folder_ = fi.isDir();
-    basename_ = is_folder_ ? fi.baseName() : fi.fileName();
-    restype_ = nw::ResourceType::from_extension(fi.completeSuffix().toStdString());
+    if (!is_folder_) {
+        basename_ = fi.fileName();
+        res_ = nw::Resource::from_filename(basename_.toStdString());
+    } else {
+        basename_ = fi.baseName();
+    }
+}
+
+inline bool comparePaths(const QString& path1, const QString& path2)
+{
+    QString normalizedPath1 = QDir::fromNativeSeparators(QDir::cleanPath(path1));
+    QString normalizedPath2 = QDir::fromNativeSeparators(QDir::cleanPath(path2));
+    return normalizedPath1 == normalizedPath2;
 }
 
 QVariant ProjectItem::data(int column, int role) const
@@ -29,10 +40,21 @@ QVariant ProjectItem::data(int column, int role) const
         return basename_;
     } else if (role == Qt::DecorationRole) {
         if (!is_folder_) {
-            return restypeToIcon(restype_);
+            auto path = module_->get_canonical_path(res_);
+            if (!comparePaths(QString::fromStdString(path), path_)) {
+                return ZFontIcon::icon(Fa6::FAMILY, Fa6::SOLID, Fa6::fa_circle_exclamation, Qt::red);
+            }
+            return restypeToIcon(res_.type);
         } else {
             auto color = QColor(42, 130, 218);
             return ZFontIcon::icon(Fa6::FAMILY, Fa6::SOLID, Fa6::fa_folder, color);
+        }
+    } else if (role == Qt::ToolTipRole) {
+        if (!is_folder_) {
+            auto path = QString::fromStdString(module_->get_canonical_path(res_));
+            if (!comparePaths(path, path_)) {
+                return QString("%1 is shadowed by %2").arg(path_, path);
+            }
         }
     }
     return {};
@@ -73,8 +95,8 @@ void ProjectModel::walkDirectory(const QString& path, ProjectItem* parent)
     QFileInfoList list = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries);
 
     for (const QFileInfo& fileInfo : list) {
-        auto path = fileInfo.absoluteFilePath();
-        auto it = new ProjectItem(path, module_);
+        auto p = fileInfo.canonicalFilePath();
+        auto it = new ProjectItem(p, module_);
 
         if (parent) {
             parent->appendChild(it);
@@ -83,7 +105,7 @@ void ProjectModel::walkDirectory(const QString& path, ProjectItem* parent)
         }
 
         if (fileInfo.isDir()) {
-            walkDirectory(fileInfo.absoluteFilePath(), it);
+            walkDirectory(fileInfo.canonicalFilePath(), it);
         }
     }
 }

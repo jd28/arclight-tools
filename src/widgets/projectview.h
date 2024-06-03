@@ -22,7 +22,7 @@ public:
     QString path_;
     QString basename_;
     bool is_folder_ = false;
-    nw::ResourceType::type restype_ = nw::ResourceType::invalid;
+    nw::Resource res_;
 };
 
 // == ProjectModel ============================================================
