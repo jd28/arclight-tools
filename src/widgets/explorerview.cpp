@@ -292,6 +292,20 @@ bool ExplorerProxy::filterAcceptsRow(int source_row, const QModelIndex& source_p
     return has_match(filter_.toStdString().c_str(), data.toString().toStdString().c_str());
 }
 
+bool ExplorerProxy::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
+{
+    auto lhs = static_cast<ExplorerItem*>(source_left.internalPointer());
+    auto rhs = static_cast<ExplorerItem*>(source_right.internalPointer());
+
+    // Don't sort containers.. they should be in the order added.
+    if (lhs->kind_ == ExplorerItemKind::container && rhs->kind_ == ExplorerItemKind::container) {
+        return false;
+    }
+
+    // The design of the source model won't allow categories and resources to be at the same treelevel
+    return lhs->name_ < rhs->name_;
+}
+
 // == ExplorerView ============================================================
 // ============================================================================
 
@@ -306,5 +320,6 @@ ExplorerView::ExplorerView(QWidget* parent)
     proxy_->setRecursiveFilteringEnabled(true);
     proxy_->setSourceModel(model_);
     setModel(proxy_);
+    model()->sort(0);
     expandRecursively(model()->index(0, 0), 0);
 }
