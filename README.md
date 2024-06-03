@@ -100,6 +100,32 @@ Feat selection with handy fuzzy searching.
 
 A tree view for NWN dialogs.  See dlg above.
 
+## The Views
+
+These are widgets that present different aspects of a module.  There is still a lot of work
+and investigation to be done here.
+
+![treeviews](screenshots/project_tree_views.png)
+
+### The Project View
+
+The project view is a filesystem view of the module.  This could be a flat single directory
+like the NWN Toolsets "temp.0" folder.  Or it can be arbitrary, an error indicator is shown
+if a file is shadowed by another, since in the end there is only the flat namespace of ERF
+files.  This view might not be better than palette views or maybe in addition to them at
+some point.
+
+### The Area List View
+
+This is the list of areas, similar to the NWN Toolset.  I don't see Dialogs as being particularly
+special, and scripts have far far better external editors today than could ever be built internally,
+there's no reason for a special scripts tree node.
+
+### The Explorer View
+
+This will be a view of the modules external dependencies presented very much as NWN explorer does.
+Currently it only shows the modules HAK files.
+
 ## Acknowledgements, Credits, & Inspirations
 
 - [BioWare](https://bioware.com), [Beamdog](https://beamdog.com) - The game itself
