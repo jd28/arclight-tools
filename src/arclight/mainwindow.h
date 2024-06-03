@@ -5,6 +5,7 @@
 
 #include <absl/container/flat_hash_map.h>
 
+#include <QFutureWatcher>
 #include <QMainWindow>
 
 #include <functional>
@@ -12,6 +13,7 @@
 class ArclightView;
 class AreaListItem;
 class ProjectItem;
+class WaitingSpinnerWidget;
 
 class QTreeView;
 
@@ -36,6 +38,7 @@ public:
     ~MainWindow();
 
     void loadCallbacks();
+    void loadTreeviews();
 
 public slots:
     void onActionClose(bool checked = false);
@@ -50,10 +53,14 @@ private:
     Ui::MainWindow *ui;
     nw::Module* module_ = nullptr;
     nw::StaticDirectory* module_container_ = nullptr;
+    QString module_path_;
     absl::flat_hash_map<QString, ExtensionCallback> ext_to_view_;
     absl::flat_hash_map<nw::ResourceType::type, ResourceCallback> type_to_view_;
     QList<QTreeView*> project_treeviews_;
     bool close_project_cancelled_ = false;
+    QFuture<QList<nw::Module*>> mod_load_future_;
+    QFutureWatcher<QList<nw::Module*>>* mod_load_watcher_ = nullptr;
+    WaitingSpinnerWidget* spinner_ = nullptr;
 };
 
 #endif // MAINWINDOW_H

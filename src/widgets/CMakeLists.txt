@@ -38,6 +38,7 @@ add_subdirectory(LanguageMenu)
 add_subdirectory(qtpropertybrowser)
 add_subdirectory(renderer)
 add_subdirectory(TlkView)
+add_subdirectory(QtWaitingSpinner)
 
 target_include_directories(arclight-widgets PRIVATE
     ${CMAKE_SOURCE_DIR}/external/rollnw/external
@@ -51,5 +52,6 @@ target_include_directories(arclight-widgets PRIVATE
 target_link_libraries(arclight-widgets PRIVATE
     nw
     arclight-external
+    WaitingSpinnerWidget
     Qt6::Widgets
 )

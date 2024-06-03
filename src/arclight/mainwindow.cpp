@@ -8,6 +8,7 @@
 #include "LanguageMenu/LanguageMenu.h"
 #include "explorerview.h"
 #include "widgets/ArclightView.h"
+#include "widgets/QtWaitingSpinner/waitingspinnerwidget.h"
 #include "widgets/arealistview.h"
 #include "widgets/projectview.h"
 
@@ -21,6 +22,7 @@
 #include <QFileDialog>
 #include <QPluginLoader>
 #include <QTreeView>
+#include <QtConcurrent/QtConcurrent>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -30,6 +32,8 @@ MainWindow::MainWindow(QWidget* parent)
     auto menu = new LanguageMenu(this);
     ui->menubar->addMenu(menu);
     menu->setVisible(true);
+    spinner_ = new WaitingSpinnerWidget{this};
+    spinner_->setColor(Qt::white);
 
     loadCallbacks();
 
@@ -122,13 +126,11 @@ void MainWindow::onActionCloseProject(bool checked)
     nw::kernel::unload_module();
 }
 
-void MainWindow::onActionOpen(bool checked)
+void MainWindow::loadTreeviews()
 {
-    auto path = QFileDialog::getOpenFileName(this, "Open Project", "", "Module (*.ifo *.ifo.json)");
-    if (path.isEmpty()) { return; }
-    QFileInfo fi(path);
-    module_ = nw::kernel::load_module(fi.absolutePath().toStdString());
+    module_ = mod_load_watcher_->result()[0];
     module_container_ = dynamic_cast<nw::StaticDirectory*>(nw::kernel::resman().module_container());
+    QFileInfo fi{module_path_};
 
     ui->placeHolder->setHidden(true);
 
@@ -157,6 +159,27 @@ void MainWindow::onActionOpen(bool checked)
     ui->projectComboBox->setEnabled(true);
     ui->projectComboBox->setCurrentIndex(0);
     ui->filter->setEnabled(true);
+
+    spinner_->stop();
+}
+
+void MainWindow::onActionOpen(bool checked)
+{
+    auto path = QFileDialog::getOpenFileName(this, "Open Project", "", "Module (*.ifo *.ifo.json)");
+    if (path.isEmpty()) { return; }
+
+    QFileInfo fi(path);
+    module_path_ = fi.absolutePath();
+
+    spinner_->start();
+    mod_load_watcher_ = new QFutureWatcher<QList<nw::Module*>>(this);
+    connect(mod_load_watcher_, &QFutureWatcher<QList<nw::Module*>>::finished, this, &MainWindow::loadTreeviews);
+
+    // Start the background task using QtConcurrent::run
+    mod_load_future_ = QtConcurrent::run([path = module_path_.toStdString()] {
+        return QList<nw::Module*>{nw::kernel::load_module(path)};
+    });
+    mod_load_watcher_->setFuture(mod_load_future_);
 }
 
 void MainWindow::onAreaListDoubleClicked(AreaListItem* item)
