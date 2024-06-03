@@ -1,5 +1,8 @@
 #include "projectview.h"
 
+extern "C" {
+#include "fzy/match.h"
+}
 #include "util/restypeicons.h"
 
 #include "ZFontIcon/ZFontIcon.h"
@@ -114,8 +117,21 @@ void ProjectModel::walkDirectory(const QString& path, ProjectItem* parent)
 // ============================================================================
 
 ProjectProxyModel::ProjectProxyModel(QObject* parent)
-    : FuzzyProxyModel(parent)
+    : QSortFilterProxyModel(parent)
 {
+}
+
+bool ProjectProxyModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
+{
+    QModelIndex index = sourceModel()->index(source_row, 0, source_parent);
+    auto item = static_cast<ProjectItem*>(index.internalPointer());
+    if (item->res_.type == nw::ResourceType::git || item->res_.type == nw::ResourceType::gic) {
+        return false;
+    }
+
+    if (filter_.isEmpty()) { return true; }
+    auto data = index.data(Qt::DisplayRole);
+    return has_match(filter_.toStdString().c_str(), data.toString().toStdString().c_str());
 }
 
 bool ProjectProxyModel::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
@@ -129,6 +145,12 @@ bool ProjectProxyModel::lessThan(const QModelIndex& source_left, const QModelInd
         return false;
     }
     return lhs->basename_.compare(rhs->basename_, Qt::CaseInsensitive) < 0;
+}
+
+void ProjectProxyModel::onFilterChanged(QString filter)
+{
+    filter_ = std::move(filter);
+    invalidateFilter();
 }
 
 // == ProjectView ==========================================================

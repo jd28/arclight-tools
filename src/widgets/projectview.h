@@ -45,12 +45,20 @@ public:
 // == FileSystemProxtModel ====================================================
 // ============================================================================
 
-class ProjectProxyModel : public FuzzyProxyModel {
+class ProjectProxyModel : public QSortFilterProxyModel {
     Q_OBJECT
 public:
     ProjectProxyModel(QObject* parent = nullptr);
 
+protected:
     virtual bool lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const override;
+    virtual bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
+
+public slots:
+    void onFilterChanged(QString filter);
+
+public:
+    QString filter_;
 };
 
 // == ProjectView =============================================================

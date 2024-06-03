@@ -138,7 +138,7 @@ void MainWindow::loadTreeviews()
     project_view->setHidden(false);
     project_treeviews_.push_back(project_view);
     ui->projectLayout->addWidget(project_view);
-    connect(ui->filter, &QLineEdit::textChanged, project_view->proxy_, &FuzzyProxyModel::onFilterChanged);
+    connect(ui->filter, &QLineEdit::textChanged, project_view->proxy_, &ProjectProxyModel::onFilterChanged);
     connect(project_view, &ProjectView::itemDoubleClicked, this, &MainWindow::onProjectDoubleClicked);
 
     auto area_list_view = new AreaListView(this);
