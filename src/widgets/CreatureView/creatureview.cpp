@@ -121,7 +121,7 @@ void CreatureView::loadCreature(nw::Creature* creature)
     });
 
     for (size_t i = 0; i < nw::LevelStats::max_classes; ++i) {
-        auto widget = ui->classesWidget->findChild<QWidget*>(QString("classWidget_%1").arg(i + 1));
+        // auto widget = ui->classesWidget->findChild<QWidget*>(QString("classWidget_%1").arg(i + 1));
         auto spinbox = ui->classesWidget->findChild<QSpinBox*>(QString("classLevelSpinBox_%1").arg(i + 1));
         auto combobox = ui->classesWidget->findChild<QComboBox*>(QString("classComboBox_%1").arg(i + 1));
 

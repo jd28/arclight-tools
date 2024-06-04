@@ -3,10 +3,10 @@
 extern "C" {
 #include "fzy/match.h"
 }
-#include "util/restypeicons.h"
-
 #include "ZFontIcon/ZFontIcon.h"
 #include "ZFontIcon/ZFont_fa6.h"
+#include "nw/kernel/Objects.hpp"
+#include "util/restypeicons.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -24,6 +24,52 @@ ProjectItem::ProjectItem(const QString& path, nw::StaticDirectory* module, Proje
     if (!is_folder_) {
         basename_ = fi.fileName();
         res_ = nw::Resource::from_filename(basename_.toStdString());
+        if (res_.type == nw::ResourceType::uti) {
+            auto name = nw::Item::get_name_from_file(path_.toStdString());
+            if (!name.empty()) {
+                basename_ = QString::fromStdString(name);
+            }
+        } else if (res_.type == nw::ResourceType::utc) {
+            auto name = nw::Creature::get_name_from_file(path_.toStdString());
+            if (!name.empty()) {
+                basename_ = QString::fromStdString(name);
+            }
+        } else if (res_.type == nw::ResourceType::are) {
+            auto name = nw::Area::get_name_from_file(path_.toStdString());
+            if (!name.empty()) {
+                basename_ = QString::fromStdString(name);
+            }
+        } else if (res_.type == nw::ResourceType::utd) {
+            auto name = nw::Door::get_name_from_file(path_.toStdString());
+            if (!name.empty()) {
+                basename_ = QString::fromStdString(name);
+            }
+        } else if (res_.type == nw::ResourceType::ute) {
+            auto name = nw::Encounter::get_name_from_file(path_.toStdString());
+            if (!name.empty()) {
+                basename_ = QString::fromStdString(name);
+            }
+        } else if (res_.type == nw::ResourceType::utm) {
+            auto name = nw::Store::get_name_from_file(path_.toStdString());
+            if (!name.empty()) {
+                basename_ = QString::fromStdString(name);
+            }
+        } else if (res_.type == nw::ResourceType::utp) {
+            auto name = nw::Placeable::get_name_from_file(path_.toStdString());
+            if (!name.empty()) {
+                basename_ = QString::fromStdString(name);
+            }
+        } else if (res_.type == nw::ResourceType::uts) {
+            auto name = nw::Sound::get_name_from_file(path_.toStdString());
+            if (!name.empty()) {
+                basename_ = QString::fromStdString(name);
+            }
+        } else if (res_.type == nw::ResourceType::utt) {
+            auto name = nw::Trigger::get_name_from_file(path_.toStdString());
+            if (!name.empty()) {
+                basename_ = QString::fromStdString(name);
+            }
+        }
     } else {
         basename_ = fi.baseName();
     }
@@ -57,6 +103,8 @@ QVariant ProjectItem::data(int column, int role) const
             auto path = QString::fromStdString(module_->get_canonical_path(res_));
             if (!comparePaths(path, path_)) {
                 return QString("%1 is shadowed by %2").arg(path_, path);
+            } else {
+                return QString::fromStdString(res_.filename());
             }
         }
     }
