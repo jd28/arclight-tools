@@ -2,6 +2,8 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS OpenGL OpenGLWidgets)
 
 add_library(renderer STATIC
+    basicmodelview.cpp
+    basicmodelview.h
     shader.cpp
     shader.hpp
     model.cpp

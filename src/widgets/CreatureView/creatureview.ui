@@ -661,7 +661,7 @@
          <widget class="QWidget" name="widget_3" native="true">
           <layout class="QHBoxLayout" name="horizontalLayout">
            <item>
-            <widget class="CreatureModelView" name="openGLWidget"/>
+            <widget class="BasicModelView" name="openGLWidget"/>
            </item>
           </layout>
          </widget>
@@ -675,9 +675,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CreatureModelView</class>
+   <class>BasicModelView</class>
    <extends>QOpenGLWidget</extends>
-   <header>creaturemodelview.h</header>
+   <header>../renderer/basicmodelview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

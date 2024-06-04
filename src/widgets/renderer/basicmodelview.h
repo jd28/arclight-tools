@@ -16,10 +16,10 @@ namespace nw {
 struct Creature;
 }
 
-class CreatureModelView : public QOpenGLWidget {
+class BasicModelView : public QOpenGLWidget {
     Q_OBJECT
 public:
-    CreatureModelView(QWidget* parent = nullptr);
+    BasicModelView(QWidget* parent = nullptr);
     void setCreature(nw::Creature* creature);
 
     void mousePressEvent(QMouseEvent* event) override;

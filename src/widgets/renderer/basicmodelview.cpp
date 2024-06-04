@@ -1,4 +1,4 @@
-#include "creaturemodelview.h"
+#include "basicmodelview.h"
 
 #include "../renderer/TextureCache.hpp"
 
@@ -16,7 +16,7 @@
 
 TextureCache s_textures;
 
-CreatureModelView::CreatureModelView(QWidget* parent)
+BasicModelView::BasicModelView(QWidget* parent)
     : QOpenGLWidget(parent)
 {
     QSurfaceFormat fmt;
@@ -31,11 +31,11 @@ CreatureModelView::CreatureModelView(QWidget* parent)
     distance_ = 8.0f;    // Start 3 units away from the origin
 
     QTimer* timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &CreatureModelView::onUpdateModelAnimation);
+    connect(timer, &QTimer::timeout, this, &BasicModelView::onUpdateModelAnimation);
     timer->start(16);
 }
 
-void CreatureModelView::initializeGL()
+void BasicModelView::initializeGL()
 {
     context_ = context();
     funcs_ = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_3_3_Core>(context_);
@@ -138,7 +138,7 @@ void CreatureModelView::initializeGL()
         funcs_);
 }
 
-void CreatureModelView::onUpdateModelAnimation()
+void BasicModelView::onUpdateModelAnimation()
 {
     if (isVisible() && current_model_) {
         current_model_->update(16);
@@ -146,14 +146,14 @@ void CreatureModelView::onUpdateModelAnimation()
     }
 }
 
-void CreatureModelView::resizeGL(int w, int h)
+void BasicModelView::resizeGL(int w, int h)
 {
     funcs_->glViewport(0, 0, w, h);
     height_ = float(h);
     width_ = float(w);
 }
 
-void CreatureModelView::setCreature(nw::Creature* creature)
+void BasicModelView::setCreature(nw::Creature* creature)
 {
     creature_ = creature;
     if (current_appearance_ == creature_->appearance.id) {
@@ -180,14 +180,14 @@ void CreatureModelView::setCreature(nw::Creature* creature)
     update();
 }
 
-void CreatureModelView::mousePressEvent(QMouseEvent* event)
+void BasicModelView::mousePressEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton) {
         last_pos_ = event->pos();
     }
 }
 
-void CreatureModelView::mouseMoveEvent(QMouseEvent* event)
+void BasicModelView::mouseMoveEvent(QMouseEvent* event)
 {
     if (event->buttons() & Qt::LeftButton) {
         int dx = event->position().x() - last_pos_.x();
@@ -199,7 +199,7 @@ void CreatureModelView::mouseMoveEvent(QMouseEvent* event)
     }
 }
 
-void CreatureModelView::wheelEvent(QWheelEvent* event)
+void BasicModelView::wheelEvent(QWheelEvent* event)
 {
     int num_degrees = event->angleDelta().y() / 8;
     int num_steps = num_degrees / 15;
@@ -207,7 +207,7 @@ void CreatureModelView::wheelEvent(QWheelEvent* event)
     update();
 }
 
-void CreatureModelView::paintGL()
+void BasicModelView::paintGL()
 {
     auto gl = funcs_;
     gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -245,7 +245,7 @@ void CreatureModelView::paintGL()
     }
 }
 
-void CreatureModelView::onDataChanged()
+void BasicModelView::onDataChanged()
 {
     makeCurrent();
     setCreature(creature_);
