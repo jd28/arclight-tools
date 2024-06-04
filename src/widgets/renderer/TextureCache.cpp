@@ -13,6 +13,7 @@
 std::pair<unsigned int, bool> load_texture(std::string_view resref, QOpenGLFunctions_3_3_Core* gl)
 {
     unsigned int texture = std::numeric_limits<unsigned int>::max();
+    if (resref == "null") { return {texture, false}; }
 
     auto data = nw::kernel::resman().demand_in_order(resref,
         {nw::ResourceType::dds, nw::ResourceType::plt, nw::ResourceType::tga});
