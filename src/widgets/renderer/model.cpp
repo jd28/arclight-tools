@@ -106,10 +106,9 @@ void Skin::build_inverse_binds()
     Node* parent = this;
     while (parent->parent_) {
         parent = parent->parent_;
-    }
-
-    if (parent->has_transform_) {
-        ptrans = glm::translate(ptrans, parent->position_) * glm::toMat4(parent->rotation_);
+        if (parent->has_transform_) {
+            ptrans = glm::translate(ptrans, parent->position_) * glm::toMat4(parent->rotation_);
+        }
     }
 
     auto trans = glm::translate(ptrans, position_) * glm::toMat4(rotation_);
