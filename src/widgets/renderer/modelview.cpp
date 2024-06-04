@@ -222,6 +222,7 @@ void ModelView::wheelEvent(QWheelEvent* event)
     } else {
         cameraPosition -= cameraFront * movementSpeed;
     }
+    cameraPosition.y = std::max(1.0f, cameraPosition.y);
     update();
 }
 
@@ -291,6 +292,7 @@ void ModelView::moveCameraUp()
 void ModelView::moveCameraDown()
 {
     cameraPosition -= cameraUp * movementSpeed;
+    cameraPosition.y = std::max(1.0f, cameraPosition.y);
 }
 
 void ModelView::yawCameraLeft()
