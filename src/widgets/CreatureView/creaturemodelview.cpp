@@ -170,8 +170,10 @@ void CreatureModelView::setCreature(nw::Creature* creature)
         nw::Resref resref{model};
 
         current_model_ = load_model(resref.view(), funcs_);
-        if (!current_model_->load_animation("pause1")) {
-            current_model_->load_animation("cpause1");
+        if (current_model_) {
+            if (!current_model_->load_animation("pause1")) {
+                current_model_->load_animation("cpause1");
+            }
         }
     }
 
