@@ -15,6 +15,7 @@
 #include "widgets/projectview.h"
 
 #include "nw/formats/Dialog.hpp"
+#include "nw/kernel/Objects.hpp"
 #include "nw/kernel/Resources.hpp"
 #include "nw/log.hpp"
 #include "nw/objects/Creature.hpp"
@@ -40,8 +41,7 @@ MainWindow::MainWindow(QWidget* parent)
     loadCallbacks();
 
     ui->projectComboBox->addItem("Project", 0);
-    ui->projectComboBox->addItem("Areas", 1);
-    ui->projectComboBox->addItem("Explorer", 2);
+    ui->projectComboBox->addItem("Explorer", 1);
 
     connect(ui->actionClose, &QAction::triggered, this, &MainWindow::onActionClose);
     connect(ui->actionCloseProject, &QAction::triggered, this, &MainWindow::onActionCloseProject);
@@ -87,6 +87,14 @@ void MainWindow::loadCallbacks()
             tv->setFont(QApplication::font());
             tv->selectFirst();
 
+            return tv;
+        });
+
+    type_to_view_.emplace(nw::ResourceType::are,
+        [this](nw::Resource res) -> ArclightView* {
+            auto area = nw::kernel::objects().make_area(res.resref);
+            area->instantiate();
+            auto tv = new AreaView(area, this);
             return tv;
         });
 }
@@ -143,11 +151,6 @@ void MainWindow::loadTreeviews()
     project_treeviews_.push_back(project_view);
     ui->projectLayout->addWidget(project_view);
 
-    auto area_list_view = new AreaListView(module_, fi.absolutePath(), this);
-    area_list_view->setHidden(true);
-    project_treeviews_.push_back(area_list_view);
-    ui->projectLayout->addWidget(area_list_view);
-
     auto explorer_view = new ExplorerView(this);
     explorer_view->setHidden(true);
     project_treeviews_.push_back(explorer_view);
@@ -181,22 +184,9 @@ void MainWindow::onActionOpen(bool checked)
     connect(mod_load_watcher_, &QFutureWatcher<QList<nw::Module*>>::finished, this, &MainWindow::loadTreeviews);
 
     mod_load_future_ = QtConcurrent::run([path = module_path_.toStdString()] {
-        return QList<nw::Module*>{nw::kernel::load_module(path)};
+        return QList<nw::Module*>{nw::kernel::load_module(path, false)};
     });
     mod_load_watcher_->setFuture(mod_load_future_);
-}
-
-void MainWindow::onAreaListDoubleClicked(AreaListItem* item)
-{
-    if (!item) { return; }
-
-    if (item->type_ == AreaListItemType::area) {
-        auto av = new AreaView(item->area_, ui->tabWidget);
-        auto idx = ui->tabWidget->addTab(av, item->data(0).toString());
-        ui->tabWidget->setTabsClosable(true);
-        ui->tabWidget->setCurrentIndex(idx);
-        av->load_model();
-    }
 }
 
 void MainWindow::onProjectDoubleClicked(ProjectItem* item)
@@ -246,11 +236,7 @@ void MainWindow::onTreeviewsLoaded()
     connect(ui->filter, &QLineEdit::textChanged, project_view->proxy_, &ProjectProxyModel::onFilterChanged);
     connect(project_view, &ProjectView::itemDoubleClicked, this, &MainWindow::onProjectDoubleClicked);
 
-    auto area_list_view = static_cast<AreaListView*>(project_treeviews_[1]);
-    connect(area_list_view, &AreaListView::itemDoubleClicked, this, &MainWindow::onAreaListDoubleClicked);
-    connect(ui->filter, &QLineEdit::textChanged, area_list_view->filter_, &FuzzyProxyModel::onFilterChanged);
-
-    auto explorer_view = static_cast<ExplorerView*>(project_treeviews_[2]);
+    auto explorer_view = static_cast<ExplorerView*>(project_treeviews_[1]);
     connect(ui->filter, &QLineEdit::textChanged, explorer_view->proxy_, &FuzzyProxyModel::onFilterChanged);
 
     ui->projectComboBox->setEnabled(true);
