@@ -53,6 +53,8 @@ QIcon restypeToIcon(nw::ResourceType::type type)
         return ZFontIcon::icon(Fa6::FAMILY, Fa6::SOLID, Fa6::fa_shield_halved, color);
     case nw::ResourceType::dlg:
         return ZFontIcon::icon(Fa6::FAMILY, Fa6::SOLID, Fa6::fa_comments, color);
+    case nw::ResourceType::utp:
+        return ZFontIcon::icon(Fa6::FAMILY, Fa6::SOLID, Fa6::fa_chair, color);
 
     // Areas
     case nw::ResourceType::caf:

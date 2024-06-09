@@ -1,6 +1,7 @@
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS Multimedia)
 find_package(Qt6 REQUIRED COMPONENTS OpenGL OpenGLWidgets)
+find_package(Qt6 REQUIRED COMPONENTS OpenGL Sql)
 
 set(SRC_FILES
     main.cpp
@@ -57,6 +58,7 @@ target_link_libraries(arclight PUBLIC
     WaitingSpinnerWidget
     Qt6::Widgets
     Qt6::Multimedia
+    Qt6::Sql
 )
 
 if(LINUX)
