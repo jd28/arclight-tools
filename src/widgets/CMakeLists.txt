@@ -30,6 +30,8 @@ add_library(arclight-widgets STATIC
     explorerview.cpp
     arclighttreeview.h
     arclighttreeview.cpp
+    strreflineedit.h
+    strreflineedit.cpp
 )
 
 add_subdirectory(AreaView)

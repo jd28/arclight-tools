@@ -35,8 +35,6 @@ CreatureView::CreatureView(nw::Creature* creature, QWidget* parent)
     ui->tabWidget->addTab(appearance, "Appearance");
     connect(appearance, &CreatureAppearanceView::dataChanged, this, &CreatureView::onDataChanged);
 
-    ui->firstNameEdit->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_ellipsis));
-    ui->lastNameEdit->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_ellipsis));
     ui->portraitEdit->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_ellipsis));
 
     setupClassWidgets(creature);
@@ -53,8 +51,8 @@ void CreatureView::loadCreature(nw::Creature* creature)
 {
     creature_ = nullptr;
 
-    ui->firstName->setText(QString::fromStdString(nw::kernel::strings().get(creature->name_first)));
-    ui->lastName->setText(QString::fromStdString(nw::kernel::strings().get(creature->name_last)));
+    ui->firstName->setLocString(creature->name_first);
+    ui->lastName->setLocString(creature->name_last);
     ui->genderSelector->setCurrentIndex(int(creature->gender));
 
     if (auto portraits_2da = nw::kernel::twodas().get("portraits")) {

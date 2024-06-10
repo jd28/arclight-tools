@@ -80,20 +80,7 @@
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QLineEdit" name="firstName"/>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="firstNameEdit">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                   </widget>
+                   <widget class="StrrefLineEdit" name="firstName"/>
                   </item>
                  </layout>
                 </widget>
@@ -127,20 +114,7 @@
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QLineEdit" name="lastName"/>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="lastNameEdit">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                   </widget>
+                   <widget class="StrrefLineEdit" name="lastName"/>
                   </item>
                  </layout>
                 </widget>
@@ -678,6 +652,11 @@
    <class>BasicModelView</class>
    <extends>QOpenGLWidget</extends>
    <header>../renderer/basicmodelview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>StrrefLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>../strreflineedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
