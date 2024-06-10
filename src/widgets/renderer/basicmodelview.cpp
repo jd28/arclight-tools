@@ -136,6 +136,8 @@ void BasicModelView::initializeGL()
             FragColor = texture(ourTexture, TexCoord);
         })",
         funcs_);
+
+    emit initialized();
 }
 
 void BasicModelView::onUpdateModelAnimation()
@@ -177,6 +179,12 @@ void BasicModelView::setCreature(nw::Creature* creature)
         }
     }
 
+    update();
+}
+
+void BasicModelView::setModel(std::unique_ptr<Model> model)
+{
+    current_model_ = std::move(model);
     update();
 }
 

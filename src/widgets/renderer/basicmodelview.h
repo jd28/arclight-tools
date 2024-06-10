@@ -14,13 +14,17 @@ class QWheelEvent;
 
 namespace nw {
 struct Creature;
+struct Placeable;
 }
 
 class BasicModelView : public QOpenGLWidget {
     Q_OBJECT
 public:
     BasicModelView(QWidget* parent = nullptr);
+
+    QOpenGLFunctions_3_3_Core* funcs() const { return funcs_; }
     void setCreature(nw::Creature* creature);
+    void setModel(std::unique_ptr<Model> model);
 
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
@@ -35,6 +39,9 @@ protected:
     void initializeGL() override;
     void resizeGL(int w, int h) override;
     void paintGL() override;
+
+signals:
+    void initialized();
 
 private:
     nw::Creature* creature_ = nullptr;
