@@ -52,6 +52,7 @@
 #include <QtWidgets/QApplication>
 #include <QtGui/QPainter>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QCompleter>
 
 #include <limits>
 #include <limits.h>
@@ -1193,6 +1194,7 @@ public:
     {
         QString val;
         QRegularExpression regExp;
+        QCompleter* completer = nullptr;
     };
 
     typedef QMap<const QtProperty *, Data> PropertyValueMap;
@@ -1285,6 +1287,11 @@ QRegularExpression QtStringPropertyManager::regExp(const QtProperty *property) c
     return getData<QRegularExpression>(d_ptr->m_values, &QtStringPropertyManagerPrivate::Data::regExp, property, QRegularExpression());
 }
 
+QCompleter* QtStringPropertyManager::completer(const QtProperty *property) const
+{
+    return getData<QCompleter*>(d_ptr->m_values, &QtStringPropertyManagerPrivate::Data::completer, property, nullptr);
+}
+
 /*!
     \reimp
 */
@@ -1351,6 +1358,22 @@ void QtStringPropertyManager::setRegExp(QtProperty *property, const QRegularExpr
     it.value() = data;
 
     emit regExpChanged(property, data.regExp);
+}
+
+void QtStringPropertyManager::setCompleter(QtProperty* property, QCompleter* completer){
+    const QtStringPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    QtStringPropertyManagerPrivate::Data data = it.value() ;
+
+    if (!completer || data.completer == completer)
+        return;
+
+    data.completer = completer;
+    it.value() = data;
+
+    emit completerChanged(property, data.completer);
 }
 
 /*!

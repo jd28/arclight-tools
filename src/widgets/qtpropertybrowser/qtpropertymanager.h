@@ -46,6 +46,7 @@ QT_BEGIN_NAMESPACE
 
 class QDate;
 class QTime;
+class QCompleter;
 class QDateTime;
 class QLocale;
 class QRegularExpression;
@@ -172,13 +173,17 @@ public:
 
     QString value(const QtProperty *property) const;
     QRegularExpression regExp(const QtProperty *property) const;
+    QCompleter* completer(const QtProperty* property) const;
 
 public Q_SLOTS:
     void setValue(QtProperty *property, const QString &val);
     void setRegExp(QtProperty *property, const QRegularExpression &regExp);
+    void setCompleter(QtProperty* property, QCompleter* completer);
 Q_SIGNALS:
-    void valueChanged(QtProperty *property, const QString &val);
+    void valueChanged(QtProperty* property, const QString& val);
     void regExpChanged(QtProperty *property, const QRegularExpression &regExp);
+    void completerChanged(QtProperty* property, QCompleter* completer);
+
 protected:
     QString valueText(const QtProperty *property) const override;
     void initializeProperty(QtProperty *property) override;

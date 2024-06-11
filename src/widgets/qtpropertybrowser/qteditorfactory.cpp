@@ -892,7 +892,8 @@ public:
 
     void slotPropertyChanged(QtProperty *property, const QString &value);
     void slotRegExpChanged(QtProperty *property, const QRegularExpression &regExp);
-    void slotSetValue(const QString &value);
+    void slotCompleterChanged(QtProperty* property, QCompleter* completer);
+    void slotSetValue(const QString& value);
 };
 
 void QtLineEditFactoryPrivate::slotPropertyChanged(QtProperty *property,
@@ -929,6 +930,23 @@ void QtLineEditFactoryPrivate::slotRegExpChanged(QtProperty *property,
         editor->setValidator(newValidator);
         if (oldValidator)
             delete oldValidator;
+        editor->blockSignals(false);
+    }
+}
+
+void QtLineEditFactoryPrivate::slotCompleterChanged(QtProperty* property, QCompleter* completer)
+{
+    const auto it = m_createdEditors.constFind(property);
+    if (it == m_createdEditors.constEnd())
+        return;
+
+    QtStringPropertyManager* manager = q_ptr->propertyManager(property);
+    if (!manager)
+        return;
+
+    for (QLineEdit* editor : it.value()) {
+        editor->blockSignals(true);
+        editor->setCompleter(completer);
         editor->blockSignals(false);
     }
 }
@@ -989,6 +1007,8 @@ void QtLineEditFactory::connectPropertyManager(QtStringPropertyManager *manager)
                 this, SLOT(slotPropertyChanged(QtProperty*,QString)));
     connect(manager, SIGNAL(regExpChanged(QtProperty*,QRegularExpression)),
                 this, SLOT(slotRegExpChanged(QtProperty*,QRegularExpression)));
+    connect(manager, SIGNAL(completerChanged(QtProperty*, QCompleter*)),
+        this, SLOT(slotCompleterChanged(QtProperty*, QCompleter*)));
 }
 
 /*!
@@ -1008,8 +1028,13 @@ QWidget *QtLineEditFactory::createEditor(QtStringPropertyManager *manager,
     }
     editor->setText(manager->value(property));
 
+    QCompleter* completer = manager->completer(property);
+    if (completer) {
+        editor->setCompleter(completer);
+    }
+
     connect(editor, SIGNAL(textEdited(QString)),
-                this, SLOT(slotSetValue(QString)));
+        this, SLOT(slotSetValue(QString)));
     connect(editor, SIGNAL(destroyed(QObject*)),
                 this, SLOT(slotEditorDestroyed(QObject*)));
     return editor;
@@ -1026,6 +1051,8 @@ void QtLineEditFactory::disconnectPropertyManager(QtStringPropertyManager *manag
                 this, SLOT(slotPropertyChanged(QtProperty*,QString)));
     disconnect(manager, SIGNAL(regExpChanged(QtProperty*,QRegularExpression)),
                 this, SLOT(slotRegExpChanged(QtProperty*,QRegularExpression)));
+    disconnect(manager, SIGNAL(completerChanged(QtProperty*, QCompleter*)),
+        this, SLOT(slotCompleterChanged(QtProperty*, QCompleter*)));
 }
 
 // QtDateEditFactory
@@ -1733,7 +1760,7 @@ QtCharEditorFactory::QtCharEditorFactory(QObject *parent)
 */
 QtCharEditorFactory::~QtCharEditorFactory()
 {
-    qDeleteAll(d_ptr->m_editorToProperty.keys());
+    qDeleteAll(d_ptr->m_editorToProperty.keyBegin(), d_ptr->m_editorToProperty.keyEnd());
 }
 
 /*!
