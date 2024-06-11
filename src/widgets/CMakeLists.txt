@@ -32,6 +32,9 @@ add_library(arclight-widgets STATIC
     arclighttreeview.cpp
     strreflineedit.h
     strreflineedit.cpp
+    strreftextedit.h
+    strreftextedit.cpp
+    strreftextedit.ui
 )
 
 add_subdirectory(AreaView)
