@@ -55,4 +55,8 @@ target_link_libraries(erfherder PRIVATE
 )
 endif()
 
+if(APPLE)
+install(TARGETS erfherder BUNDLE DESTINATION bin)
+else()
 install(TARGETS erfherder)
+endif()
