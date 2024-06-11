@@ -57,8 +57,7 @@ target_link_libraries(texview PRIVATE
 endif()
 
 if(APPLE)
-install(TARGETS texview BUNDLE DESTINATION bin)
+install(TARGETS texview RUNTIME DESTINATION bin BUNDLE DESTINATION bin)
 else()
 install(TARGETS texview)
 endif()
-

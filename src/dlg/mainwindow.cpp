@@ -11,6 +11,7 @@
 
 #include "nlohmann/json.hpp"
 
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QHeaderView>
 #include <QMessageBox>

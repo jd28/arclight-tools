@@ -68,7 +68,7 @@ target_link_libraries(arclight PRIVATE
 endif()
 
 if(APPLE)
-install(TARGETS arclight BUNDLE DESTINATION bin)
+install(TARGETS arclight RUNTIME DESTINATION bin BUNDLE DESTINATION bin)
 else()
 install(TARGETS arclight)
 endif()

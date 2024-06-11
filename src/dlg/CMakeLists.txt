@@ -66,7 +66,7 @@ target_link_libraries(dlg PRIVATE
 endif()
 
 if(APPLE)
-install(TARGETS dlg BUNDLE DESTINATION bin)
+install(TARGETS dlg RUNTIME DESTINATION bin BUNDLE DESTINATION bin)
 else()
 install(TARGETS dlg)
 endif()
