@@ -15,10 +15,6 @@ jobs:
   build:
     env:
       buildDir: "${{ github.workspace }}/build/"
-      CCACHE_DIR: "${{ github.workspace }}/ccache/"
-      CCACHE_BASEDIR: "${{ github.workspace }}/ccache/"
-      SCCACHE_DIR: "${{ github.workspace }}/ccache/"
-      SCCACHE_BASEDIR: "${{ github.workspace }}/ccache/"
 
     name: build on linux
     runs-on: ubuntu-20.04
@@ -55,7 +51,12 @@ jobs:
             libxcb-res0-dev python3-setuptools python3-mako python3-pip libxcb-cursor0
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 --slave /usr/bin/gcov gcov /usr/bin/gcov-11
 
-      # Install latest CMake.
+      - name: setup ccache
+        run: |
+          ccache --set-config=cache_dir=${{ github.workspace }}/.ccache
+          ccache --set-config=max_size=5G
+          ccache --set-config=compression=true
+
       - uses: lukka/get-cmake@latest
 
       - name: Install Qt
@@ -69,8 +70,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ${{ github.workspace }}/ccache
-          key: ${{ runner.os }}-build-${{ env.DATE }} }}
+            ${{ github.workspace }}/.ccache
+          key: ${{ runner.os }}-build-${{ env.DATE }}
           restore-keys: |
             ${{ runner.os }}-build-
 
@@ -82,3 +83,7 @@ jobs:
         with:
           name: arclight-linux-x64
           path: bin/*
+
+      - name: ccache stats
+        run: |
+         ccache -s

@@ -16,10 +16,6 @@ jobs:
     env:
       buildDir: "${{ github.workspace }}/build/"
       MACOSX_DEPLOYMENT_TARGET: "10.15"
-      CCACHE_DIR: "${{ github.workspace }}/ccache/"
-      CCACHE_BASEDIR: "${{ github.workspace }}/ccache/"
-      SCCACHE_DIR: "${{ github.workspace }}/ccache/"
-      SCCACHE_BASEDIR: "${{ github.workspace }}/ccache/"
 
     name: build on macOS
     runs-on: macos-latest
@@ -47,7 +43,7 @@ jobs:
 
       - name: Set up ccache
         run: |
-          ccache --set-config=cache_dir=${{ github.workspace }}/ccache
+          ccache --set-config=cache_dir=${{ github.workspace }}/.ccache
           ccache --set-config=max_size=500M
           ccache --set-config=compression=true
 
@@ -62,7 +58,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ${{ github.workspace }}/ccache
+            ${{ github.workspace }}/.ccache
           key: ${{ runner.os }}-build-${{ env.DATE }}
           restore-keys: |
             ${{ runner.os }}-build-
@@ -79,3 +75,7 @@ jobs:
             LICENSE
             LICENSE.LGPL
             README.md
+
+      - name: ccache stats
+        run: |
+          ccache -s

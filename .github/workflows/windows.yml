@@ -15,10 +15,6 @@ jobs:
   build:
     env:
       buildDir: "${{ github.workspace }}/build/"
-      CCACHE_DIR: "${{ github.workspace }}/ccache/"
-      CCACHE_BASEDIR: "${{ github.workspace }}/ccache/"
-      SCCACHE_DIR: "${{ github.workspace }}/ccache/"
-      SCCACHE_BASEDIR: "${{ github.workspace }}/ccache/"
 
     name: build on windows
     runs-on: windows-2019
@@ -33,7 +29,7 @@ jobs:
       - name: install dependencies
         if: matrix.os == 'windows-2019'
         run: |
-          choco install sccache ninja
+          choco install ccache ninja
 
       - name: Get current date
         run: |
@@ -43,6 +39,12 @@ jobs:
         uses: egor-tensin/vs-shell@v2
         with:
           arch: x64
+
+      - name: setup ccache
+        run: |
+          ccache --set-config=cache_dir=${{ github.workspace }}/.ccache
+          ccache --set-config=max_size=5G
+          ccache --set-config=compression=true
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
@@ -55,7 +57,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ${{ github.workspace }}/ccache
+            ${{ github.workspace }}/.ccache
           key: ${{ runner.os }}-build-${{ env.DATE }}
           restore-keys: |
             ${{ runner.os }}-build-
@@ -67,3 +69,7 @@ jobs:
         with:
           name: arclight-windows-x64
           path: bin/*
+
+      - name: ccache stats
+        run: |
+          ccache -s
