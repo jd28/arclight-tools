@@ -6,6 +6,7 @@
 
 #include "nw/formats/Dialog.hpp"
 #include "nw/kernel/Resources.hpp"
+#include "nw/serialization/GffBuilder.hpp"
 
 #include "nlohmann/json.hpp"
 
