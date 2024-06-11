@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if [[ -z "${Qt6_DIR}" ]]; then
   echo "Environment variable Qt6_DIR not set, do you have Qt installed?"
   exit 1
