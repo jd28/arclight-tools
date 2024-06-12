@@ -298,7 +298,7 @@ void ProjectModel::insertMetadata(const QString& path, const ProjectItemMetadata
     }
 
     if (sqlite3_step(stmt) != SQLITE_DONE) {
-        LOG_F(ERROR "Insert error: {}", sqlite3_errmsg(db_));
+        LOG_F(ERROR, "Insert error: {}", sqlite3_errmsg(db_));
     }
 }
 
