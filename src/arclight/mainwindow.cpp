@@ -7,8 +7,6 @@
 #include "widgets/CreatureView/creatureview.h"
 #include "widgets/DialogView/dialogmodel.h"
 #include "widgets/DialogView/dialogview.h"
-#include "widgets/ItemView/itemview.h"
-#include "widgets/PlaceableView/placeableview.h"
 #include "widgets/QtWaitingSpinner/waitingspinnerwidget.h"
 #include "widgets/arclighttreeview.h"
 #include "widgets/arealistview.h"
