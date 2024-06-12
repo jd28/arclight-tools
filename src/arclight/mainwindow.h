@@ -37,13 +37,18 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void closeEvent(QCloseEvent* event);
     void loadCallbacks();
     void loadTreeviews();
+    void open(const QString& path);
+    void readSettings();
+    void writeSettings();
 
 public slots:
     void onActionClose(bool checked = false);
     void onActionCloseProject(bool checked = false);
     void onActionOpen(bool checked = false);
+    void onActionRecent();
     void onProjectDoubleClicked(ProjectItem* item);
     void onProjectViewChanged(int index);
     void onTabCloseRequested(int index);
@@ -63,6 +68,8 @@ private:
     QFuture<QList<AbstractTreeModel*>> treeview_load_future_;
     QFutureWatcher<QList<AbstractTreeModel*>>* treeview_load_watcher_ = nullptr;
     WaitingSpinnerWidget* spinner_ = nullptr;
+    QStringList recentProjects_;
+    QList<QAction*> recentActions_;
 };
 
 #endif // MAINWINDOW_H

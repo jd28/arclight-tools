@@ -30,8 +30,9 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
+    readSettings();
 
+    ui->setupUi(this);
     spinner_ = new WaitingSpinnerWidget{this};
     spinner_->setColor(Qt::white);
 
@@ -39,6 +40,21 @@ MainWindow::MainWindow(QWidget* parent)
 
     ui->projectComboBox->addItem("Project", 0);
     ui->projectComboBox->addItem("Explorer", 1);
+
+    for (int i = 0; i < 10; ++i) {
+        QAction* act = new QAction(this);
+        if (i < recentProjects_.size()) {
+            ui->menuRecentProjects->addAction(act);
+            act->setData(recentProjects_[i]);
+            act->setText(QString::fromStdString(
+                fmt::format("&{} - {}", i + 1, recentProjects_[i].toStdString())));
+        } else {
+            ui->menuRecentProjects->addAction(act);
+            act->setVisible(false);
+        }
+        recentActions_.append(act);
+        connect(act, &QAction::triggered, this, &MainWindow::onActionRecent);
+    }
 
     connect(ui->actionClose, &QAction::triggered, this, &MainWindow::onActionClose);
     connect(ui->actionCloseProject, &QAction::triggered, this, &MainWindow::onActionCloseProject);
@@ -50,6 +66,15 @@ MainWindow::MainWindow(QWidget* parent)
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+// == Methods =================================================================
+// ============================================================================
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    writeSettings();
+    QMainWindow::closeEvent(event);
 }
 
 void MainWindow::loadCallbacks()
@@ -96,6 +121,91 @@ void MainWindow::loadCallbacks()
         });
 }
 
+void MainWindow::loadTreeviews()
+{
+    auto result = mod_load_watcher_->result();
+    delete mod_load_watcher_;
+    module_ = result[0];
+    module_container_ = dynamic_cast<nw::StaticDirectory*>(nw::kernel::resman().module_container());
+
+    ui->placeHolder->setHidden(true);
+
+    auto project_view = new ProjectView(module_container_, this);
+    project_view->setHidden(false);
+    project_treeviews_.push_back(project_view);
+    ui->projectLayout->addWidget(project_view);
+
+    auto explorer_view = new ExplorerView(this);
+    explorer_view->setHidden(true);
+    project_treeviews_.push_back(explorer_view);
+    ui->projectLayout->addWidget(explorer_view);
+
+    treeview_load_watcher_ = new QFutureWatcher<QList<AbstractTreeModel*>>(this);
+    connect(treeview_load_watcher_, &QFutureWatcher<QList<AbstractTreeModel*>>::finished, this, &MainWindow::onTreeviewsLoaded);
+
+    treeview_load_future_ = QtConcurrent::run([views = this->project_treeviews_] {
+        QList<AbstractTreeModel*> result;
+        for (auto it : views) {
+            result.push_back(it->loadModel());
+        }
+        return result;
+    });
+    treeview_load_watcher_->setFuture(treeview_load_future_);
+}
+
+void MainWindow::open(const QString& path)
+{
+    QFileInfo fi(path);
+    module_path_ = fi.absolutePath();
+    auto abspath = fi.absoluteFilePath();
+
+    if (recentProjects_.contains(abspath)) {
+        recentProjects_.removeOne(abspath);
+    } else if (recentProjects_.size() >= 10) {
+        recentProjects_.pop_back();
+    }
+    recentProjects_.insert(0, abspath);
+
+    for (int i = 0; i < recentProjects_.size(); ++i) {
+        recentActions_[i]->setData(recentProjects_[i]);
+        recentActions_[i]->setText(QString::fromStdString(
+            fmt::format("&{} - {}", i + 1, recentProjects_[i].toStdString())));
+        recentActions_[i]->setVisible(true);
+    }
+
+    spinner_->start();
+    mod_load_watcher_ = new QFutureWatcher<QList<nw::Module*>>(this);
+    connect(mod_load_watcher_, &QFutureWatcher<QList<nw::Module*>>::finished, this, &MainWindow::loadTreeviews);
+
+    mod_load_future_ = QtConcurrent::run([path = module_path_.toStdString()] {
+        return QList<nw::Module*>{nw::kernel::load_module(path, false)};
+    });
+    mod_load_watcher_->setFuture(mod_load_future_);
+}
+
+void MainWindow::readSettings()
+{
+    QSettings settings("jmd", "arclight");
+    int size = settings.beginReadArray("Recent Projects");
+    for (int i = 0; i < size; ++i) {
+        settings.setArrayIndex(i);
+        recentProjects_.append(settings.value("file").toString());
+    }
+    settings.endArray();
+}
+
+void MainWindow::writeSettings()
+{
+    QSettings settings("jmd", "arclight");
+    settings.beginWriteArray("Recent Projects", static_cast<int>(recentProjects_.size()));
+    int i = 0;
+    for (const auto& f : recentProjects_) {
+        settings.setArrayIndex(i++);
+        settings.setValue("file", f);
+    }
+    settings.endArray();
+}
+
 // == Slots ===================================================================
 // ============================================================================
 
@@ -133,57 +243,19 @@ void MainWindow::onActionCloseProject(bool checked)
     nw::kernel::unload_module();
 }
 
-void MainWindow::loadTreeviews()
-{
-    auto result = mod_load_watcher_->result();
-    delete mod_load_watcher_;
-    module_ = result[0];
-    module_container_ = dynamic_cast<nw::StaticDirectory*>(nw::kernel::resman().module_container());
-    QFileInfo fi{module_path_};
-
-    ui->placeHolder->setHidden(true);
-
-    auto project_view = new ProjectView(module_container_, this);
-    project_view->setHidden(false);
-    project_treeviews_.push_back(project_view);
-    ui->projectLayout->addWidget(project_view);
-
-    auto explorer_view = new ExplorerView(this);
-    explorer_view->setHidden(true);
-    project_treeviews_.push_back(explorer_view);
-    ui->projectLayout->addWidget(explorer_view);
-
-    treeview_load_watcher_ = new QFutureWatcher<QList<AbstractTreeModel*>>(this);
-    connect(treeview_load_watcher_, &QFutureWatcher<QList<AbstractTreeModel*>>::finished, this, &MainWindow::onTreeviewsLoaded);
-
-    treeview_load_future_ = QtConcurrent::run([views = this->project_treeviews_] {
-        QList<AbstractTreeModel*> result;
-        for (auto it : views) {
-            result.push_back(it->loadModel());
-        }
-        return result;
-    });
-    treeview_load_watcher_->setFuture(treeview_load_future_);
-}
-
 void MainWindow::onActionOpen(bool checked)
 {
     Q_UNUSED(checked);
 
     auto path = QFileDialog::getOpenFileName(this, "Open Project", "", "Module (*.ifo *.ifo.json)");
     if (path.isEmpty()) { return; }
+    open(path);
+}
 
-    QFileInfo fi(path);
-    module_path_ = fi.absolutePath();
-
-    spinner_->start();
-    mod_load_watcher_ = new QFutureWatcher<QList<nw::Module*>>(this);
-    connect(mod_load_watcher_, &QFutureWatcher<QList<nw::Module*>>::finished, this, &MainWindow::loadTreeviews);
-
-    mod_load_future_ = QtConcurrent::run([path = module_path_.toStdString()] {
-        return QList<nw::Module*>{nw::kernel::load_module(path, false)};
-    });
-    mod_load_watcher_->setFuture(mod_load_future_);
+void MainWindow::onActionRecent()
+{
+    QAction* act = reinterpret_cast<QAction*>(sender());
+    open(act->data().toString());
 }
 
 void MainWindow::onProjectDoubleClicked(ProjectItem* item)
