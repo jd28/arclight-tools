@@ -4,14 +4,13 @@
 #include "AbstractTreeModel.hpp"
 
 #include "arclighttreeview.h"
-#include "nw/resources/StaticDirectory.hpp"
-#include "proxymodels.h"
 
-#include "nw/resources/ResourceType.hpp"
+#include "nw/resources/StaticDirectory.hpp"
+#include "sqlite3.h"
 
 #include <QDateTime>
 #include <QFileSystemWatcher>
-#include <QSqlDatabase>
+#include <QSortFilterProxyModel>
 #include <QTreeView>
 
 struct ProjectItemMetadata {
@@ -53,7 +52,7 @@ public:
     virtual void loadRootItems() override;
     QMimeData* mimeData(const QModelIndexList& indexes) const override;
     QStringList mimeTypes() const override;
-    void setupDatabase();
+    bool setupDatabase();
     Qt::DropActions supportedDropActions() const override;
     Qt::DropActions supportedDragActions() const override;
     void walkDirectory(const QString& path, ProjectItem* parent = nullptr);
@@ -61,7 +60,7 @@ public:
     QFileSystemWatcher watcher_;
     nw::StaticDirectory* module_ = nullptr;
     QString path_;
-    QSqlDatabase db_;
+    sqlite3* db_ = nullptr;
 };
 
 // == FileSystemProxtModel ====================================================

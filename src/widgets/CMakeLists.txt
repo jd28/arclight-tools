@@ -4,7 +4,7 @@ if(POLICY CMP0071)
 endif()
 
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 add_library(arclight-widgets STATIC
     AbstractTreeModel.cpp
@@ -61,5 +61,4 @@ target_link_libraries(arclight-widgets PRIVATE
     arclight-external
     WaitingSpinnerWidget
     Qt6::Widgets
-    Qt6::Sql
 )

@@ -8,13 +8,12 @@ extern "C" {
 #include "nw/kernel/Objects.hpp"
 #include "util/restypeicons.h"
 
+#include "nw/util/scope_exit.hpp"
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QMimeData>
-#include <QSqlDatabase>
-#include <QSqlError>
-#include <QSqlQuery>
 
 inline QString read_object_name(const QString& path)
 {
@@ -138,7 +137,9 @@ ProjectModel::ProjectModel(nw::StaticDirectory* module, QObject* parent)
     , module_{module}
     , path_{QString::fromStdString(module_->path())}
 {
-    setupDatabase();
+    if (!setupDatabase()) {
+        throw std::runtime_error("failed to open arclight meta database");
+    }
 }
 
 int ProjectModel::columnCount(const QModelIndex& parent) const
@@ -250,29 +251,54 @@ Qt::ItemFlags ProjectModel::flags(const QModelIndex& index) const
 
 ProjectItemMetadata ProjectModel::getMetadata(const QString& path)
 {
-    QSqlQuery query;
-    query.prepare("SELECT object_name, size, last_modified FROM file_metadata WHERE path = :path");
-    query.bindValue(":path", path);
-    if (query.exec() && query.next()) {
-        ProjectItemMetadata metadata;
-        metadata.object_name = query.value(0).toString();
-        metadata.size = query.value(1).toLongLong();
-        metadata.lastModified = query.value(2).toDateTime();
+    ProjectItemMetadata metadata;
+
+    sqlite3_stmt* stmt = nullptr;
+    SCOPE_EXIT([stmt] { sqlite3_finalize(stmt); });
+
+    const char* sql = "SELECT object_name, size, last_modified FROM file_metadata WHERE path = ?";
+    if (sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        LOG_F(ERROR, "Failed to prepare statement: {}", sqlite3_errmsg(db_));
         return metadata;
     }
-    return {}; // Return an empty metadata struct if not found
+
+    if (sqlite3_bind_text(stmt, 1, path.toStdString().c_str(), -1, SQLITE_STATIC) != SQLITE_OK) {
+        LOG_F(ERROR, "Failed to bind parameter: {}", sqlite3_errmsg(db_));
+        return metadata;
+    }
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        metadata.object_name = QString::fromUtf8(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+        metadata.size = sqlite3_column_int64(stmt, 1);
+        metadata.lastModified = QDateTime::fromString(QString::fromUtf8(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2))), Qt::ISODate);
+    } else {
+        LOG_F(ERROR, "No data found or query execution failed: {}", sqlite3_errmsg(db_));
+    }
+
+    return metadata;
 }
 
 void ProjectModel::insertMetadata(const QString& path, const ProjectItemMetadata& metadata)
 {
-    QSqlQuery query;
-    query.prepare("REPLACE INTO file_metadata (path, object_name, size, last_modified) VALUES (:path, :object_name, :size, :last_modified)");
-    query.bindValue(":path", path);
-    query.bindValue(":object_name", metadata.object_name);
-    query.bindValue(":size", metadata.size);
-    query.bindValue(":last_modified", metadata.lastModified);
-    if (!query.exec()) {
-        qWarning() << "Insert error:" << query.lastError().text();
+    sqlite3_stmt* stmt = nullptr;
+    SCOPE_EXIT([stmt] { sqlite3_finalize(stmt); });
+
+    const char* sql = "REPLACE INTO file_metadata (path, object_name, size, last_modified) VALUES (?, ?, ?, ?)";
+    if (sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        LOG_F(ERROR, "Failed to prepare statement: {}", sqlite3_errmsg(db_));
+        return;
+    }
+
+    if (sqlite3_bind_text(stmt, 1, path.toStdString().c_str(), -1, SQLITE_STATIC) != SQLITE_OK
+        || sqlite3_bind_text(stmt, 2, metadata.object_name.toStdString().c_str(), -1, SQLITE_STATIC) != SQLITE_OK
+        || sqlite3_bind_int64(stmt, 3, metadata.size) != SQLITE_OK
+        || sqlite3_bind_text(stmt, 4, metadata.lastModified.toString(Qt::ISODate).toStdString().c_str(), -1, SQLITE_STATIC) != SQLITE_OK) {
+        LOG_F(ERROR, "Failed to bind parameters:", sqlite3_errmsg(db_));
+        return;
+    }
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        LOG_F(ERROR "Insert error: {}", sqlite3_errmsg(db_));
     }
 }
 
@@ -296,20 +322,32 @@ QStringList ProjectModel::mimeTypes() const
     return QStringList() << "application/x-arclight-projectitem";
 }
 
-void ProjectModel::setupDatabase()
+bool ProjectModel::setupDatabase()
 {
-    db_ = QSqlDatabase::addDatabase("QSQLITE");
-    db_.setDatabaseName(QDir(path_).filePath(".arclight_meta.db"));
-    if (db_.open()) {
-        QSqlQuery query;
-        query.exec("CREATE TABLE IF NOT EXISTS file_metadata ("
-                   "path TEXT PRIMARY KEY, "
-                   "object_name TEXT, "
-                   "size INTEGER, "
-                   "last_modified DATETIME)");
-    } else {
-        qWarning() << "Open database" << db_.lastError().text();
+    QString dbPath = QDir(path_).filePath(".arclight_meta.db");
+
+    // Open the database
+    if (sqlite3_open(dbPath.toStdString().c_str(), &db_) != SQLITE_OK) {
+        LOG_F(ERROR, "Cannot open database: {}", sqlite3_errmsg(db_));
+        return false;
     }
+
+    // Create table if it does not exist
+    const char* sql = "CREATE TABLE IF NOT EXISTS file_metadata ("
+                      "path TEXT PRIMARY KEY, "
+                      "object_name TEXT, "
+                      "size INTEGER, "
+                      "last_modified DATETIME)";
+
+    char* errMsg = nullptr;
+    if (sqlite3_exec(db_, sql, nullptr, nullptr, &errMsg) != SQLITE_OK) {
+        LOG_F(ERROR, "SQL error: {}", errMsg);
+        sqlite3_free(errMsg);
+        sqlite3_close(db_);
+        return false;
+    }
+
+    return true;
 }
 
 Qt::DropActions ProjectModel::supportedDropActions() const

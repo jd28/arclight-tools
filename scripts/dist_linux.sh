@@ -16,13 +16,6 @@ cmake --build --preset default
 echo "Installing..."
 cmake --install build/ --prefix .
 
-echo "Delete unneeded sql plugins..."
-    ls -l ${Qt6_DIR}/plugins/sqldrivers/
-    rm -f ${Qt6_DIR}/plugins/sqldrivers/libqsqlmimer.so
-    rm -f ${Qt6_DIR}/plugins/sqldrivers/libqsqlmysql.so
-    rm -f ${Qt6_DIR}/plugins/sqldrivers/libqsqlodbc.so
-    rm -f ${Qt6_DIR}/plugins/sqldrivers/libqsqlpsql.so
-
 wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
 chmod a+x linuxdeploy-x86_64.AppImage
 
