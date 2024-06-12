@@ -74,7 +74,6 @@
     <addaction name="actionAbout"/>
     <addaction name="actionAboutQt"/>
     <addaction name="separator"/>
-    <addaction name="actionAboutPlugins"/>
    </widget>
    <widget class="LanguageMenu" name="menuLanguage">
     <property name="title">
@@ -122,6 +121,9 @@
    <property name="text">
     <string>Open Project</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
   <action name="actionOpen_Folder">
    <property name="text">
@@ -129,6 +131,9 @@
    </property>
   </action>
   <action name="actionAbout">
+   <property name="icon">
+    <iconset theme="help-about"/>
+   </property>
    <property name="text">
     <string>About</string>
    </property>
@@ -155,6 +160,9 @@
    </property>
    <property name="text">
     <string>Close</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
    </property>
   </action>
   <action name="actionCloseProject">

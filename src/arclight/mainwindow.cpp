@@ -22,6 +22,7 @@
 
 #include <QDir>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QPluginLoader>
 #include <QTreeView>
 #include <QtConcurrent/QtConcurrent>
@@ -56,6 +57,8 @@ MainWindow::MainWindow(QWidget* parent)
         connect(act, &QAction::triggered, this, &MainWindow::onActionRecent);
     }
 
+    connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::onActionAbout);
+    connect(ui->actionAboutQt, &QAction::triggered, this, &MainWindow::onActionAboutQt);
     connect(ui->actionClose, &QAction::triggered, this, &MainWindow::onActionClose);
     connect(ui->actionCloseProject, &QAction::triggered, this, &MainWindow::onActionCloseProject);
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpen);
@@ -208,6 +211,26 @@ void MainWindow::writeSettings()
 
 // == Slots ===================================================================
 // ============================================================================
+
+void MainWindow::onActionAbout()
+{
+    QMessageBox::about(nullptr, "Arclight",
+        R"end(<h3>About Arclight</h3><br>
+              A utility for working with Nevewinter Nights modules<br><br>
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.)end");
+}
+
+void MainWindow::onActionAboutQt()
+{
+    QMessageBox::aboutQt(this);
+}
 
 void MainWindow::onActionClose(bool checked)
 {

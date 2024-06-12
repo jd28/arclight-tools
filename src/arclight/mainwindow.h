@@ -45,6 +45,8 @@ public:
     void writeSettings();
 
 public slots:
+    void onActionAbout();
+    void onActionAboutQt();
     void onActionClose(bool checked = false);
     void onActionCloseProject(bool checked = false);
     void onActionOpen(bool checked = false);
