@@ -179,7 +179,7 @@ void ProjectModel::walkDirectory(const QString& path, ProjectItem* parent)
             res = nw::Resource::from_path(p.toStdString());
             if (res.valid()) {
                 auto meta = getMetadata(p);
-                if (fileInfo.lastModified() > meta.lastModified) {
+                if (!meta.lastModified.isValid() || fileInfo.lastModified() > meta.lastModified) {
                     meta.object_name = read_object_name(p);
                     meta.size = fileInfo.size();
                     meta.lastModified = fileInfo.lastModified();
@@ -270,9 +270,7 @@ ProjectItemMetadata ProjectModel::getMetadata(const QString& path)
     if (sqlite3_step(stmt) == SQLITE_ROW) {
         metadata.object_name = QString::fromUtf8(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
         metadata.size = sqlite3_column_int64(stmt, 1);
-        metadata.lastModified = QDateTime::fromString(QString::fromUtf8(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2))), Qt::ISODate);
-    } else {
-        LOG_F(ERROR, "No data found or query execution failed: {}", sqlite3_errmsg(db_));
+        metadata.lastModified = QDateTime::fromString(QString::fromUtf8(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2))), Qt::ISODateWithMs);
     }
 
     return metadata;
@@ -289,10 +287,13 @@ void ProjectModel::insertMetadata(const QString& path, const ProjectItemMetadata
         return;
     }
 
-    if (sqlite3_bind_text(stmt, 1, path.toStdString().c_str(), -1, SQLITE_STATIC) != SQLITE_OK
-        || sqlite3_bind_text(stmt, 2, metadata.object_name.toStdString().c_str(), -1, SQLITE_STATIC) != SQLITE_OK
+    auto p = path.toStdString();
+    auto n = metadata.object_name.toStdString();
+    auto d = metadata.lastModified.toString(Qt::ISODateWithMs).toStdString();
+    if (sqlite3_bind_text(stmt, 1, p.c_str(), static_cast<int>(p.size()), SQLITE_STATIC) != SQLITE_OK
+        || sqlite3_bind_text(stmt, 2, n.c_str(), static_cast<int>(n.size()), SQLITE_STATIC) != SQLITE_OK
         || sqlite3_bind_int64(stmt, 3, metadata.size) != SQLITE_OK
-        || sqlite3_bind_text(stmt, 4, metadata.lastModified.toString(Qt::ISODate).toStdString().c_str(), -1, SQLITE_STATIC) != SQLITE_OK) {
+        || sqlite3_bind_text(stmt, 4, d.c_str(), static_cast<int>(d.size()), SQLITE_STATIC) != SQLITE_OK) {
         LOG_F(ERROR, "Failed to bind parameters:", sqlite3_errmsg(db_));
         return;
     }
