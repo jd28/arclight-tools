@@ -31,9 +31,7 @@ MainWindow::MainWindow(QWidget* parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    auto menu = new LanguageMenu(this);
-    ui->menubar->addMenu(menu);
-    menu->setVisible(true);
+
     spinner_ = new WaitingSpinnerWidget{this};
     spinner_->setColor(Qt::white);
 
