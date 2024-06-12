@@ -27,7 +27,6 @@ jobs:
       - uses: lukka/get-cmake@latest
 
       - name: install dependencies
-        if: matrix.os == 'windows-2019'
         run: |
           choco install ccache ninja
 
