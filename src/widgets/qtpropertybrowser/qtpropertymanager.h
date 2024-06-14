@@ -565,7 +565,8 @@ public:
     QtEnumPropertyManager(QObject *parent = 0);
     ~QtEnumPropertyManager();
 
-    int value(const QtProperty *property) const;
+    QVariant data(const QtProperty* property) const;
+    int value(const QtProperty* property) const;
     QStringList enumNames(const QtProperty *property) const;
     QMap<int, QIcon> enumIcons(const QtProperty *property) const;
 
@@ -573,12 +574,16 @@ public Q_SLOTS:
     void setValue(QtProperty *property, int val);
     void setEnumNames(QtProperty *property, const QStringList &names);
     void setEnumIcons(QtProperty *property, const QMap<int, QIcon> &icons);
+    void setEnumData(QtProperty* property, const QList<QVariant>& enumData);
 Q_SIGNALS:
     void valueChanged(QtProperty *property, int val);
     void enumNamesChanged(QtProperty *property, const QStringList &names);
     void enumIconsChanged(QtProperty *property, const QMap<int, QIcon> &icons);
+    void enumDataChanged(QtProperty* property, const QList<QVariant>& icons);
+
 protected:
-    QString valueText(const QtProperty *property) const override;
+    QVariant valueData(const QtProperty* property) const;
+    QString valueText(const QtProperty* property) const override;
     QIcon valueIcon(const QtProperty *property) const override;
     void initializeProperty(QtProperty *property) override;
     void uninitializeProperty(QtProperty *property) override;

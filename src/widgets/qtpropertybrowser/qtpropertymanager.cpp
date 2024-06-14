@@ -4626,6 +4626,7 @@ public:
         int val{-1};
         QStringList enumNames;
         QMap<int, QIcon> enumIcons;
+        QList<QVariant> enumData;
     };
 
     typedef QMap<const QtProperty *, Data> PropertyValueMap;
@@ -4714,6 +4715,12 @@ QtEnumPropertyManager::~QtEnumPropertyManager()
 
     \sa enumNames(), setValue()
 */
+
+QVariant QtEnumPropertyManager::data(const QtProperty* property) const
+{
+    return valueData(property);
+}
+
 int QtEnumPropertyManager::value(const QtProperty *property) const
 {
     return getValue<int>(d_ptr->m_values, property, -1);
@@ -4737,6 +4744,18 @@ QStringList QtEnumPropertyManager::enumNames(const QtProperty *property) const
 QMap<int, QIcon> QtEnumPropertyManager::enumIcons(const QtProperty *property) const
 {
     return getData<QMap<int, QIcon> >(d_ptr->m_values, &QtEnumPropertyManagerPrivate::Data::enumIcons, property, QMap<int, QIcon>());
+}
+
+QVariant QtEnumPropertyManager::valueData(const QtProperty *property) const
+{
+    const QtEnumPropertyManagerPrivate::PropertyValueMap::const_iterator it = d_ptr->m_values.constFind(property);
+    if (it == d_ptr->m_values.constEnd())
+        return QVariant();
+
+    const QtEnumPropertyManagerPrivate::Data &data = it.value();
+
+    const int v = data.val;
+    return data.enumData.value(v);
 }
 
 /*!
@@ -4862,6 +4881,19 @@ void QtEnumPropertyManager::setEnumIcons(QtProperty *property, const QMap<int, Q
     it.value().enumIcons = enumIcons;
 
     emit enumIconsChanged(property, it.value().enumIcons);
+
+    emit propertyChanged(property);
+}
+
+void QtEnumPropertyManager::setEnumData(QtProperty *property, const QList<QVariant> &enumData)
+{
+    const QtEnumPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    it.value().enumData = enumData;
+
+    emit enumDataChanged(property, it.value().enumData);
 
     emit propertyChanged(property);
 }
