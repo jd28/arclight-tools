@@ -7,6 +7,7 @@
 #include "widgets/CreatureView/creatureview.h"
 #include "widgets/DialogView/dialogmodel.h"
 #include "widgets/DialogView/dialogview.h"
+#include "widgets/PlaceableView/placeableview.h"
 #include "widgets/QtWaitingSpinner/waitingspinnerwidget.h"
 #include "widgets/arclighttreeview.h"
 #include "widgets/arealistview.h"
@@ -92,6 +93,18 @@ void MainWindow::loadCallbacks()
             auto utc = new nw::Creature();
             nw::deserialize(utc, gff.toplevel(), nw::SerializationProfile::blueprint);
             return new CreatureView(utc, this);
+        });
+
+    type_to_view_.emplace(nw::ResourceType::utp,
+        [this](nw::Resource res) -> ArclightView* {
+            nw::Gff gff(nw::kernel::resman().demand(res));
+            if (!gff.valid()) {
+                LOG_F(ERROR, "[utc] failed to open file: {}", res.filename());
+                return nullptr;
+            }
+            auto obj = new nw::Placeable();
+            nw::deserialize(obj, gff.toplevel(), nw::SerializationProfile::blueprint);
+            return new PlaceableView(obj, this);
         });
 
     type_to_view_.emplace(nw::ResourceType::dlg,

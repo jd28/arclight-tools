@@ -100,6 +100,12 @@ Feat selection with handy fuzzy searching.
 
 A tree view for NWN dialogs.  See dlg above.
 
+### Placeable View
+
+A widget for placeables
+
+![placeable](screenshots/placeable-view-2024-06-13.png)
+
 ## The Views
 
 These are widgets that present different aspects of a module.  There is still a lot of work
