@@ -7,7 +7,9 @@ add_library(PlaceableView STATIC
     placeablegeneralview.ui
     placeableproperties.h
     placeableproperties.cpp
-    placeableview.h placeableview.cpp placeableview.ui
+    placeableview.h
+    placeableview.cpp
+    placeableview.ui
 )
 
 target_compile_definitions(PlaceableView PUBLIC -DGLM_ENABLE_EXPERIMENTAL)

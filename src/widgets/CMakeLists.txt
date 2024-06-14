@@ -6,6 +6,17 @@ endif()
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
+add_subdirectory(AreaView)
+add_subdirectory(ContainerView)
+add_subdirectory(CreatureView)
+add_subdirectory(DialogView)
+add_subdirectory(LanguageMenu)
+add_subdirectory(PlaceableView)
+add_subdirectory(qtpropertybrowser)
+add_subdirectory(renderer)
+add_subdirectory(TlkView)
+add_subdirectory(QtWaitingSpinner)
+
 add_library(arclight-widgets STATIC
     AbstractTreeModel.cpp
     AbstractTreeModel.hpp
@@ -39,17 +50,6 @@ add_library(arclight-widgets STATIC
     strreftextedit.ui
 )
 
-add_subdirectory(AreaView)
-add_subdirectory(ContainerView)
-add_subdirectory(CreatureView)
-add_subdirectory(DialogView)
-add_subdirectory(LanguageMenu)
-add_subdirectory(PlaceableView)
-add_subdirectory(qtpropertybrowser)
-add_subdirectory(renderer)
-add_subdirectory(TlkView)
-add_subdirectory(QtWaitingSpinner)
-
 target_include_directories(arclight-widgets PRIVATE
     ${CMAKE_SOURCE_DIR}/external/rollnw/external
     ${CMAKE_SOURCE_DIR}/external/rollnw/external/sqlite-3.45.2
@@ -63,5 +63,6 @@ target_link_libraries(arclight-widgets PRIVATE
     nw
     arclight-external
     WaitingSpinnerWidget
+    qtpropertybrowser
     Qt6::Widgets
 )
