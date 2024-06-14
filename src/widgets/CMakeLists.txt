@@ -32,6 +32,8 @@ add_library(arclight-widgets STATIC
     arclighttreeview.cpp
     strreflineedit.h
     strreflineedit.cpp
+    propertiesview.h
+    propertiesview.cpp
     strreftextedit.h
     strreftextedit.cpp
     strreftextedit.ui
