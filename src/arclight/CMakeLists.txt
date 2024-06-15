@@ -54,6 +54,7 @@ target_link_libraries(arclight PUBLIC
     AreaView
     CreatureView
     DialogView
+    DoorView
     PlaceableView
     WaitingSpinnerWidget
     Qt6::Widgets

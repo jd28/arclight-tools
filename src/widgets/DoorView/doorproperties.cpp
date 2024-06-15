@@ -1,4 +1,4 @@
-#include "placeableproperties.h"
+#include "doorproperties.h"
 
 #include "../qtpropertybrowser/qteditorfactory.h"
 #include "../qtpropertybrowser/qtpropertybrowser.h"
@@ -6,7 +6,7 @@
 
 #include "nw/kernel/FactionSystem.hpp"
 #include "nw/kernel/Rules.hpp"
-#include "nw/objects/Placeable.hpp"
+#include "nw/objects/Door.hpp"
 
 #include <QCompleter>
 #include <QGridLayout>
@@ -15,16 +15,16 @@
 
 static QRegularExpression resref_regex("^[a-z_]{1,16}$");
 
-PlaceableProperties::PlaceableProperties(QWidget* parent)
+DoorProperties::DoorProperties(QWidget* parent)
     : PropertiesView{parent}
 {
-    connect(bools(), &QtBoolPropertyManager::propertyChanged, this, &PlaceableProperties::onPropertyChanged);
-    connect(enums(), &QtEnumPropertyManager::propertyChanged, this, &PlaceableProperties::onPropertyChanged);
-    connect(ints(), &QtIntPropertyManager::propertyChanged, this, &PlaceableProperties::onPropertyChanged);
-    connect(strings(), &QtStringPropertyManager::propertyChanged, this, &PlaceableProperties::onPropertyChanged);
+    connect(bools(), &QtBoolPropertyManager::propertyChanged, this, &DoorProperties::onPropertyChanged);
+    connect(enums(), &QtEnumPropertyManager::propertyChanged, this, &DoorProperties::onPropertyChanged);
+    connect(ints(), &QtIntPropertyManager::propertyChanged, this, &DoorProperties::onPropertyChanged);
+    connect(strings(), &QtStringPropertyManager::propertyChanged, this, &DoorProperties::onPropertyChanged);
 }
 
-void PlaceableProperties::savesLoad()
+void DoorProperties::savesLoad()
 {
     QtProperty* grp_saves = addGroup("Saves");
     QList<QtProperty*> saves;
@@ -46,7 +46,7 @@ void PlaceableProperties::savesLoad()
     editor()->addProperty(grp_saves);
 }
 
-void PlaceableProperties::setObject(nw::Placeable* obj)
+void DoorProperties::setObject(nw::Door* obj)
 {
     if (obj_) { return; }
     obj_ = obj;
@@ -56,6 +56,7 @@ void PlaceableProperties::setObject(nw::Placeable* obj)
     locksLoad();
     savesLoad();
     scriptsLoad();
+    transitionLoad();
     trapsLoad();
 
     QGridLayout* layout = new QGridLayout(this);
@@ -63,7 +64,7 @@ void PlaceableProperties::setObject(nw::Placeable* obj)
     setLayout(layout);
 }
 
-void PlaceableProperties::onPropertyChanged(QtProperty* prop)
+void DoorProperties::onPropertyChanged(QtProperty* prop)
 {
     auto it = prop_func_map_.find(prop);
     if (it == std::end(prop_func_map_)) { return; }
@@ -73,7 +74,7 @@ void PlaceableProperties::onPropertyChanged(QtProperty* prop)
 // == Private Methods =========================================================
 // ============================================================================
 
-void PlaceableProperties::basicsLoad()
+void DoorProperties::basicsLoad()
 {
     QtProperty* grp_basic = addGroup("Basic");
     QStringList qfactions;
@@ -92,12 +93,6 @@ void PlaceableProperties::basicsLoad()
     });
     grp_basic->addSubProperty(hardness);
 
-    auto has_inventory = addPropertyBool("Has Inventory", obj_->has_inventory);
-    prop_func_map_.insert(has_inventory, [this](QtProperty* prop) {
-        obj_->has_inventory = bools()->value(prop);
-    });
-    grp_basic->addSubProperty(has_inventory);
-
     auto hitpoints = addPropertyInt("Hitpoints", obj_->hp, 0, std::numeric_limits<int16_t>::max());
     prop_func_map_.insert(hitpoints, [this](QtProperty* prop) {
         obj_->hp = static_cast<uint8_t>(ints()->value(prop));
@@ -110,26 +105,10 @@ void PlaceableProperties::basicsLoad()
     });
     grp_basic->addSubProperty(plot);
 
-    auto static_ = addPropertyBool("Static", obj_->static_);
-    prop_func_map_.insert(static_, [this](QtProperty* prop) {
-        obj_->static_ = bools()->value(prop);
-        locksUpdate();
-        trapsUpdate();
-    });
-    grp_basic->addSubProperty(static_);
-
-    auto useable = addPropertyBool("Useable", obj_->useable);
-    prop_func_map_.insert(useable, [this](QtProperty* prop) {
-        obj_->useable = bools()->value(prop);
-        locksUpdate();
-        trapsUpdate();
-    });
-    grp_basic->addSubProperty(useable);
-
     editor()->addProperty(grp_basic);
 }
 
-void PlaceableProperties::conversationLoad()
+void DoorProperties::conversationLoad()
 {
     QtProperty* grp_conv = addGroup("Conversation");
     auto prop = addPropertyString("Dialog", obj_->conversation, resref_regex);
@@ -145,7 +124,7 @@ void PlaceableProperties::conversationLoad()
     editor()->addProperty(grp_conv);
 }
 
-void PlaceableProperties::locksLoad()
+void DoorProperties::locksLoad()
 {
     QtProperty* grp_lock = addGroup("Lock");
 
@@ -202,10 +181,10 @@ void PlaceableProperties::locksLoad()
     editor()->addProperty(grp_lock);
 }
 
-void PlaceableProperties::locksUpdate()
+void DoorProperties::locksUpdate()
 {
-    lock_locked_prop_->setEnabled(obj_->useable);
-    lock_lockable_prop_->setEnabled(obj_->useable);
+    lock_locked_prop_->setEnabled(true);
+    lock_lockable_prop_->setEnabled(true);
     lock_remove_key_prop_->setEnabled((obj_->lock.locked || obj_->lock.lockable) && obj_->lock.key_required);
     lock_key_required_prop_->setEnabled(!obj_->lock.key_name.empty());
     lock_key_name_prop_->setEnabled(obj_->lock.locked || obj_->lock.lockable);
@@ -213,7 +192,7 @@ void PlaceableProperties::locksUpdate()
     lock_unlock_dc_prop_->setEnabled((obj_->lock.locked || obj_->lock.lockable) && !obj_->lock.key_required);
 }
 
-void PlaceableProperties::scriptsLoad()
+void DoorProperties::scriptsLoad()
 {
     QtProperty* grp_script = addGroup("Scripts");
     QList<QtProperty*> scripts;
@@ -241,10 +220,6 @@ void PlaceableProperties::scriptsLoad()
     prop_func_map_.insert(scripts.back(), [this](QtProperty* prop) {
         obj_->scripts.on_heartbeat = nw::Resref{strings()->value(prop).toStdString()};
     });
-    scripts << addPropertyString("On Inventory Disturbed", obj_->scripts.on_inventory_disturbed, resref_regex);
-    prop_func_map_.insert(scripts.back(), [this](QtProperty* prop) {
-        obj_->scripts.on_inventory_disturbed = nw::Resref{strings()->value(prop).toStdString()};
-    });
     scripts << addPropertyString("On Locked", obj_->scripts.on_lock, resref_regex);
     prop_func_map_.insert(scripts.back(), [this](QtProperty* prop) {
         obj_->scripts.on_lock = nw::Resref{strings()->value(prop).toStdString()};
@@ -256,6 +231,10 @@ void PlaceableProperties::scriptsLoad()
     scripts << addPropertyString("On Open", obj_->scripts.on_open, resref_regex);
     prop_func_map_.insert(scripts.back(), [this](QtProperty* prop) {
         obj_->scripts.on_open = nw::Resref{strings()->value(prop).toStdString()};
+    });
+    scripts << addPropertyString("On Open Failure", obj_->scripts.on_open_failure, resref_regex);
+    prop_func_map_.insert(scripts.back(), [this](QtProperty* prop) {
+        obj_->scripts.on_open_failure = nw::Resref{strings()->value(prop).toStdString()};
     });
     scripts << addPropertyString("On Spell Cast At", obj_->scripts.on_spell_cast_at, resref_regex);
     prop_func_map_.insert(scripts.back(), [this](QtProperty* prop) {
@@ -269,10 +248,6 @@ void PlaceableProperties::scriptsLoad()
     prop_func_map_.insert(scripts.back(), [this](QtProperty* prop) {
         obj_->scripts.on_unlock = nw::Resref{strings()->value(prop).toStdString()};
     });
-    scripts << addPropertyString("On Used", obj_->scripts.on_used, resref_regex);
-    prop_func_map_.insert(scripts.back(), [this](QtProperty* prop) {
-        obj_->scripts.on_used = nw::Resref{strings()->value(prop).toStdString()};
-    });
     scripts << addPropertyString("On User Defined", obj_->scripts.on_user_defined, resref_regex);
     prop_func_map_.insert(scripts.back(), [this](QtProperty* prop) {
         obj_->scripts.on_user_defined = nw::Resref{strings()->value(prop).toStdString()};
@@ -283,7 +258,30 @@ void PlaceableProperties::scriptsLoad()
     }
     editor()->addProperty(grp_script);
 }
-void PlaceableProperties::trapsLoad()
+
+void DoorProperties::transitionLoad()
+{
+    QtProperty* grp_trans = addGroup("Transition");
+    auto linked_to = addPropertyString("Destination Tag", obj_->linked_to);
+    prop_func_map_.insert(linked_to, [this](QtProperty* prop) {
+        obj_->linked_to = strings()->value(prop).toStdString();
+    });
+    linked_to->setEnabled(obj_->linked_to_flags != 0);
+    grp_trans->addSubProperty(linked_to);
+    QStringList types;
+    types << "None"
+          << "Door"
+          << "Waypoint";
+    auto linked_flags = addPropertyEnum("Destination Type", obj_->linked_to_flags, types);
+    prop_func_map_.insert(linked_flags, [this, linked_to](QtProperty* prop) {
+        obj_->linked_to_flags = static_cast<uint8_t>(enums()->value(prop));
+        linked_to->setEnabled(obj_->linked_to_flags != 0);
+    });
+    grp_trans->addSubProperty(linked_flags);
+    editor()->addProperty(grp_trans);
+}
+
+void DoorProperties::trapsLoad()
 {
     QtProperty* grp_trap = addGroup("Trap");
 
@@ -350,10 +348,10 @@ void PlaceableProperties::trapsLoad()
     editor()->addProperty(grp_trap);
 }
 
-void PlaceableProperties::trapsUpdate()
+void DoorProperties::trapsUpdate()
 {
     trap_type_->setEnabled(obj_->trap.is_trapped);
-    trap_is_trapped_->setEnabled(obj_->useable);
+    trap_is_trapped_->setEnabled(true);
     trap_detectable_->setEnabled(obj_->trap.is_trapped);
     trap_detect_dc_->setEnabled(obj_->trap.detectable);
     trap_disarmable_->setEnabled(obj_->trap.is_trapped);

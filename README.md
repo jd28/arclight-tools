@@ -100,6 +100,12 @@ Feat selection with handy fuzzy searching.
 
 A tree view for NWN dialogs.  See dlg above.
 
+### Door View
+
+A widget for doors
+
+![door](screenshots/door-view-2024-06-14.png)
+
 ### Placeable View
 
 A widget for placeables
