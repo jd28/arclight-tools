@@ -66,6 +66,7 @@ PlaceableGeneralView::PlaceableGeneralView(nw::Placeable* obj, QWidget* parent)
         }
         ++added;
     }
+    ui->appearance->model()->sort(0);
 
     connect(ui->appearance, &QComboBox::currentIndexChanged, this, &PlaceableGeneralView::onAppearanceChanged);
 }
