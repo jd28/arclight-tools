@@ -25,6 +25,7 @@ signals:
 private slots:
     void onAppearanceChanged(int value);
     void onGenericChanged(int value);
+    void onVariablesClicked();
 
 private:
     Ui::DoorGeneralView* ui = nullptr;

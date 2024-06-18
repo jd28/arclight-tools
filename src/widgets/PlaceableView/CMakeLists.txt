@@ -36,4 +36,5 @@ target_link_libraries(PlaceableView PRIVATE
     Qt6::OpenGLWidgets
     nw
     renderer    
+    VariableTableView
 )

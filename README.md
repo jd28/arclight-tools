@@ -112,6 +112,15 @@ A widget for placeables
 
 ![placeable](screenshots/placeable-view-2024-06-13.png)
 
+### Variable Table View
+
+A widget for editing variable tables.  Error indicators on duplicates,
+warning indicator on string variables with values convertible to int or float.
+
+![vartable](screenshots/vartable-view-2024-06-17.png)
+
+
+
 ## The Views
 
 These are widgets that present different aspects of a module.  There is still a lot of work

@@ -51,9 +51,9 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>0</y>
+                <y>-79</y>
                 <width>365</width>
-                <height>667</height>
+                <height>689</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -621,6 +621,19 @@
                <item>
                 <widget class="QTextEdit" name="textEdit"/>
                </item>
+               <item>
+                <widget class="QPushButton" name="variables">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>Variables</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </widget>
@@ -655,14 +668,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>BasicModelView</class>
-   <extends>QOpenGLWidget</extends>
-   <header>../renderer/basicmodelview.h</header>
-  </customwidget>
-  <customwidget>
    <class>StrrefLineEdit</class>
    <extends>QLineEdit</extends>
    <header>../strreflineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>BasicModelView</class>
+   <extends>QOpenGLWidget</extends>
+   <header>../renderer/basicmodelview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

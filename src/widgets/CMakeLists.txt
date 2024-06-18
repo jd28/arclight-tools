@@ -16,6 +16,7 @@ add_subdirectory(PlaceableView)
 add_subdirectory(qtpropertybrowser)
 add_subdirectory(renderer)
 add_subdirectory(TlkView)
+add_subdirectory(VariableTableView)
 add_subdirectory(QtWaitingSpinner)
 
 add_library(arclight-widgets STATIC

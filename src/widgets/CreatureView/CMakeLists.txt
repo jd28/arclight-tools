@@ -43,4 +43,5 @@ target_link_libraries(CreatureView PRIVATE
     Qt6::OpenGLWidgets
     nw
     renderer    
+    VariableTableView
 )

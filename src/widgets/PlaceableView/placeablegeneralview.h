@@ -24,6 +24,7 @@ signals:
 
 private slots:
     void onAppearanceChanged(int value);
+    void onVariablesClicked();
 
 private:
     Ui::PlaceableGeneralView* ui = nullptr;

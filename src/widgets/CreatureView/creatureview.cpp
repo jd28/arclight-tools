@@ -1,6 +1,7 @@
 #include "creatureview.h"
 #include "ui_creatureview.h"
 
+#include "VariableTableView/vartabledialog.h"
 #include "creatureappearanceview.h"
 #include "creaturefeatselector.h"
 #include "creaturestatsview.h"
@@ -40,6 +41,7 @@ CreatureView::CreatureView(nw::Creature* creature, QWidget* parent)
     setupClassWidgets(creature);
 
     loadCreature(creature);
+    connect(ui->variables, &QPushButton::clicked, this, &CreatureView::onVariablesClicked);
 }
 
 CreatureView::~CreatureView()
@@ -297,4 +299,11 @@ void CreatureView::onClassLevelChanged(int value)
 void CreatureView::onDataChanged()
 {
     ui->openGLWidget->onDataChanged();
+}
+
+void CreatureView::onVariablesClicked()
+{
+    VarTableDialog dialog(this);
+    dialog.setLocals(&creature_->common.locals);
+    dialog.exec();
 }

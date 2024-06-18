@@ -1,6 +1,7 @@
 #include "placeablegeneralview.h"
 #include "ui_placeablegeneralview.h"
 
+#include "../VariableTableView/vartabledialog.h"
 #include "placeableproperties.h"
 
 #include "nw/formats/Image.hpp"
@@ -69,6 +70,7 @@ PlaceableGeneralView::PlaceableGeneralView(nw::Placeable* obj, QWidget* parent)
     ui->appearance->model()->sort(0);
 
     connect(ui->appearance, &QComboBox::currentIndexChanged, this, &PlaceableGeneralView::onAppearanceChanged);
+    connect(ui->variables, &QPushButton::clicked, this, &PlaceableGeneralView::onVariablesClicked);
 }
 
 PlaceableGeneralView::~PlaceableGeneralView()
@@ -80,4 +82,11 @@ void PlaceableGeneralView::onAppearanceChanged(int value)
 {
     obj_->appearance = static_cast<uint32_t>(ui->appearance->itemData(value).toInt());
     emit appearanceChanged();
+}
+
+void PlaceableGeneralView::onVariablesClicked()
+{
+    VarTableDialog dialog(this);
+    dialog.setLocals(&obj_->common.locals);
+    dialog.exec(); // This makes the dialog modal
 }

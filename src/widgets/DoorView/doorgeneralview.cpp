@@ -1,6 +1,7 @@
 #include "doorgeneralview.h"
 #include "ui_doorgeneralview.h"
 
+#include "../VariableTableView/vartabledialog.h"
 #include "doorproperties.h"
 
 #include "nw/formats/Image.hpp"
@@ -90,6 +91,7 @@ DoorGeneralView::DoorGeneralView(nw::Door* obj, QWidget* parent)
 
     connect(ui->appearance, &QComboBox::currentIndexChanged, this, &DoorGeneralView::onAppearanceChanged);
     connect(ui->generic, &QComboBox::currentIndexChanged, this, &DoorGeneralView::onGenericChanged);
+    connect(ui->variables, &QPushButton::clicked, this, &DoorGeneralView::onVariablesClicked);
 }
 
 DoorGeneralView::~DoorGeneralView()
@@ -108,4 +110,11 @@ void DoorGeneralView::onGenericChanged(int value)
 {
     obj_->generic_type = static_cast<uint32_t>(ui->generic->itemData(value).toInt());
     emit appearanceChanged();
+}
+
+void DoorGeneralView::onVariablesClicked()
+{
+    VarTableDialog dialog(this);
+    dialog.setLocals(&obj_->common.locals);
+    dialog.exec(); // This makes the dialog modal
 }

@@ -56,6 +56,7 @@ target_link_libraries(arclight PUBLIC
     DialogView
     DoorView
     PlaceableView
+    VariableTableView
     WaitingSpinnerWidget
     Qt6::Widgets
     Qt6::Multimedia
