@@ -179,7 +179,15 @@ void ProjectModel::walkDirectory(const QString& path, ProjectItem* parent)
             res = nw::Resource::from_path(p.toStdString());
             if (res.valid()) {
                 auto meta = getMetadata(p);
-                if (!meta.lastModified.isValid() || fileInfo.lastModified() > meta.lastModified) {
+                bool insert = false;
+                if (meta.lastModified.isValid()) {
+                    qint64 lastModifiedOnDiskEpoch = fileInfo.lastModified().toMSecsSinceEpoch();
+                    qint64 dbLastModifiedEpoch = meta.lastModified.toMSecsSinceEpoch();
+                    insert = lastModifiedOnDiskEpoch > dbLastModifiedEpoch;
+                } else {
+                    insert = true;
+                }
+                if (insert) {
                     meta.object_name = read_object_name(p);
                     meta.size = fileInfo.size();
                     meta.lastModified = fileInfo.lastModified();
@@ -262,7 +270,7 @@ ProjectItemMetadata ProjectModel::getMetadata(const QString& path)
         return metadata;
     }
 
-    if (sqlite3_bind_text(stmt, 1, path.toStdString().c_str(), -1, SQLITE_STATIC) != SQLITE_OK) {
+    if (sqlite3_bind_text(stmt, 1, path.toUtf8().constData(), -1, SQLITE_STATIC) != SQLITE_OK) {
         LOG_F(ERROR, "Failed to bind parameter: {}", sqlite3_errmsg(db_));
         return metadata;
     }
