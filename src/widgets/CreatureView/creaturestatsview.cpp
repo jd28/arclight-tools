@@ -5,10 +5,8 @@
 #include "nw/kernel/Strings.hpp"
 #include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Creature.hpp"
-#include "nw/profiles/nwn1/combat.hpp"
 #include "nw/profiles/nwn1/constants.hpp"
 #include "nw/profiles/nwn1/functions.hpp"
-#include "nw/profiles/nwn1/modifiers.hpp"
 
 CreatureStatsView::CreatureStatsView(nw::Creature* creature, QWidget* parent)
     : QWidget(parent)
@@ -145,18 +143,9 @@ void CreatureStatsView::updateArmorClass()
 void CreatureStatsView::updateHitPoints()
 {
     ui->hpBase->setValue(creature_->hp);
-    auto hp_bonus = nwn1::get_ability_modifier(creature_, nwn1::ability_constitution, true) * creature_->levels.level();
-    auto tough = nwn1::toughness(creature_);
-    if (tough.is<int32_t>()) {
-        hp_bonus += tough.as<int32_t>();
-    }
-    // The toolset doesn't bother..
-    auto epic_tough = nwn1::epic_toughness(creature_);
-    if (epic_tough.is<int32_t>()) {
-        hp_bonus += epic_tough.as<int32_t>();
-    }
-    ui->hpBonuses->setText(QString::number(hp_bonus));
-    ui->hpTotal->setText(QString::number(creature_->hp + hp_bonus));
+    auto hp_max = nwn1::get_max_hitpoints(creature_);
+    ui->hpBonuses->setText(QString::number(hp_max - creature_->hp));
+    ui->hpTotal->setText(QString::number(hp_max));
 }
 
 void CreatureStatsView::updateSaves()
