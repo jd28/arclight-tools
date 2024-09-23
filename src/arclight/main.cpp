@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     nw::kernel::services().start();
 
     QApplication app{argc, argv};
-    QCoreApplication::setApplicationName("alstudio");
+    QCoreApplication::setApplicationName("arclight");
     QCoreApplication::setApplicationVersion("1.0.0");
 
 #if defined(Q_OS_WIN) || defined(Q_OS_LINUX)
